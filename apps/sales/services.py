@@ -87,7 +87,7 @@ def coverage(order: Order) -> list[Coverage]:
     """
     out = []
     for line in order.lines.select_related("sku"):
-        in_stock = stock.balance(line.sku)
+        in_stock = stock.saleable_balance(line.sku)  # expired batches cannot be sold
         committed = committed_qty(line.sku, exclude_order=order)
         available = max(in_stock - committed, Decimal("0"))
         out.append(Coverage(line, in_stock, committed, available, max(int(line.qty - available), 0)))

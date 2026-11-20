@@ -156,8 +156,10 @@ def test_dispatch_reduces_finished_goods(seeded):
     assert stock.balance(FG()) == D("88")  # benchmark check
     inv.order.refresh_from_db()
     assert inv.order.status == OrderStatus.DISPATCHED
-    m = StockMovement.objects.get(sku=FG(), movement_type="dispatch")
-    assert m.qty == D("-150") and isinstance(m.source, Dispatch) and m.source.invoice == inv
+    moves = StockMovement.objects.filter(sku=FG(), movement_type="dispatch").order_by("id")
+    # first-expiry-first-out: the 50 packets of opening stock go first, then 100 from the new batch
+    assert [(m.batch.number, m.qty) for m in moves] == [("OPEN-MUR200", D("-50")), (moves[1].batch.number, D("-100"))]
+    assert all(isinstance(m.source, Dispatch) and m.source.invoice == inv for m in moves)
 
 
 def test_cannot_dispatch_twice_or_without_stock(seeded):
@@ -237,11 +239,14 @@ def test_cancel_undispatched_invoice(seeded):
 def test_cancel_dispatched_invoice_returns_goods_at_original_cost(seeded):
     inv = retailer_a_invoice()
     services.dispatch_invoice(inv, user("admin"))
-    out = StockMovement.objects.get(sku=FG(), movement_type="dispatch")
+    out = list(StockMovement.objects.filter(sku=FG(), movement_type="dispatch").order_by("id"))
     services.cancel_invoice(inv, user("admin"), "Customer refused delivery")
     assert stock.balance(FG()) == D("238")
-    back = StockMovement.objects.get(sku=FG(), movement_type="return")
-    assert back.qty == D("150") and back.unit_cost == out.unit_cost and back.source.invoice == inv
+    back = list(StockMovement.objects.filter(sku=FG(), movement_type="return").order_by("id"))
+    # each batch gets its own packets back, at the cost they left at
+    assert [(b.batch, b.qty, b.unit_cost) for b in back] == [(o.batch, -o.qty, o.unit_cost) for o in out]
+    assert all(b.source.invoice == inv for b in back)
+    assert {stock.batch_balance(o.batch) for o in out} == {D("50"), D("188")}
 
 
 def test_cancel_rules(seeded):

@@ -80,7 +80,7 @@ def dispatch_invoice(invoice: Invoice, user, vehicle_ref="") -> Dispatch:
         raise BillingError(f"{invoice.number} has already been dispatched")
     d = Dispatch.objects.create(invoice=invoice, user=user, vehicle_ref=vehicle_ref)
     for line in invoice.lines.select_related("sku"):
-        stock.issue(line.sku, line.qty, d, MovementType.DISPATCH, note=invoice.number)  # raises if stock is short
+        stock.issue_fefo(line.sku, line.qty, d, MovementType.DISPATCH, note=invoice.number)  # earliest expiry first; raises if short
     Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.DISPATCHED)
     record(user, invoice, "dispatched", vehicle=vehicle_ref)
     record(user, invoice.order, "dispatched", invoice=invoice.number)
@@ -108,9 +108,9 @@ def cancel_invoice(invoice: Invoice, user, reason: str, goods_returned: bool | N
         igst_total=invoice.igst_total, grand_total=invoice.grand_total, created_by=user)
     if dispatched and goods_returned:
         ct = ContentType.objects.get_for_model(dispatched)
-        for line in invoice.lines.select_related("sku"):
-            out = StockMovement.objects.filter(source_type=ct, source_id=dispatched.pk, sku=line.sku).first()
-            stock.receive(line.sku, line.qty, out.unit_cost if out else 0, cn, MovementType.RETURN, note=f"{number} / {invoice.number}")
+        for out in StockMovement.objects.filter(source_type=ct, source_id=dispatched.pk, sku__isnull=False).select_related("sku", "batch"):
+            # goods go back into the batch they left from, at the cost they left at
+            stock.receive(out.sku, -out.qty, out.unit_cost, cn, MovementType.RETURN, note=f"{number} / {invoice.number}", batch=out.batch)
     invoice.status = InvoiceStatus.CANCELLED
     invoice.save()
     Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.APPROVED)
@@ -184,3 +184,14 @@ def ageing(as_of: date | None = None):
     for r in rows.values():
         r["cells"] = [r["buckets"][b[0]] for b in AGEING_BUCKETS]  # in bucket order, for templates and exports
     return sorted(rows.values(), key=lambda r: r["customer"].name)
+
+
+def batch_trace(batch):
+    """Where did this batch go? [(invoice, customer, packets)] from dispatch movements. Used for recalls."""
+    from apps.inventory.models import StockMovement
+    ct = ContentType.objects.get_for_model(Dispatch)
+    out = {}
+    for m in StockMovement.objects.filter(batch=batch, source_type=ct, movement_type=MovementType.DISPATCH):
+        d = Dispatch.objects.select_related("invoice", "invoice__customer").get(pk=m.source_id)
+        out[d.invoice_id] = (d.invoice, d.invoice.customer, out.get(d.invoice_id, (None, None, 0))[2] - m.qty)
+    return list(out.values())

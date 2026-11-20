@@ -6,10 +6,10 @@
 {% if stockable %}
 <h2>{{ stockable }}</h2>
 <div class="scroll"><table>
-  <tr><th>Date</th><th>Type</th><th>Source document</th><th>Qty</th><th>Unit cost ₹</th><th>Balance</th></tr>
-  <tr><td>{{ d_from }}</td><td colspan="4"><em>Brought forward</em></td><td>{{ brought_forward|floatformat:"-3" }}</td></tr>
+  <tr><th>Date</th><th>Type</th><th>Source document</th><th>Batch</th><th>Qty</th><th>Unit cost ₹</th><th>Balance</th></tr>
+  <tr><td>{{ d_from }}</td><td colspan="5"><em>Brought forward</em></td><td>{{ brought_forward|floatformat:"-3" }}</td></tr>
   {% for m, bal in entries %}
-  <tr><td>{{ m.moved_at|date:"d M Y H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.source }}</td><td>{{ m.qty|floatformat:"-3" }}</td><td>{{ m.unit_cost|floatformat:2 }}</td><td>{{ bal|floatformat:"-3" }}</td></tr>
+  <tr><td>{{ m.moved_at|date:"d M Y H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.source }}</td><td>{{ m.batch.number|default:"" }}</td><td>{{ m.qty|floatformat:"-3" }}</td><td>{{ m.unit_cost|floatformat:2 }}</td><td>{{ bal|floatformat:"-3" }}</td></tr>
   {% empty %}<tr><td colspan="6">No movements in this range.</td></tr>{% endfor %}
 </table></div>
 {% else %}<p>Choose an item and press Apply.</p>{% endif %}

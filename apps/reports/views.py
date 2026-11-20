@@ -30,6 +30,7 @@ REPORTS = {
     "product-sales": ("Product-wise sales", builders.product_sales, FIN, "Packets and value per product"),
     "gst-summary": ("GST summary (GSTR-1 / GSTR-3B)", builders.gst_summary, FIN, "Outward supplies in GSTR-1 table shapes"),
     "purchase-register": ("Purchase register", builders.purchase_register, FLOOR, "Supplier bills line by line"),
+    "batches": ("Finished goods by batch and expiry", builders.batch_report, FLOOR, "Batch numbers, expiry dates and stock on hand"),
     "low-stock": ("Low-stock alerts", builders.low_stock_report, FLOOR, "Raw and packaging items at or below reorder level"),
     "stock-summary": ("Stock summary", builders.stock_summary, FLOOR, "Opening, receipts, issues, adjustments, closing"),
     "stock-ledger": ("Stock ledger (all items)", builders.stock_ledger_all, FLOOR, "Every movement with running balance"),
@@ -100,5 +101,5 @@ def dashboard(request):
         "today": today, "orders_today": todays.count(), "by_status": [(OrderStatus(s).label, n) for s, n in by_status.items()],
         "packets": packets, "value": value, "pending": Order.objects.filter(status=OrderStatus.SUBMITTED).count(),
         "month_taxable": builders._sum(docs, "taxable"), "month_total": builders._sum(docs, "total"),
-        "stock_rows": stock_rows, "low": low, "alerts": alerts, "costs": costing.sku_costs(month_start, today),
+        "stock_rows": stock_rows, "low": low, "expiry": stock.expiry_alerts(), "alerts": alerts, "costs": costing.sku_costs(month_start, today),
         "total_due": sum((b[1] for b in owing), Decimal("0")), "top_due": owing[:5]})

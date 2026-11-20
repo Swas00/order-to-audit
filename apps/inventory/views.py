@@ -32,7 +32,7 @@ def stock_summary(request):
         return export_response(request.GET["export"], f"stock-summary-{d_from}-{d_to}",
                                ["Group", "Item", "Opening", "Receipts", "Issues", "Adjustments", "Closing", "Value (INR)"], rows)
     return render(request, "inventory/summary.html", {"sections": sections, "d_from": d_from, "d_to": d_to,
-                                                       "low": services.low_stock(), "low_ids": {l.item.pk for l in services.low_stock()}})
+                                                       "low": services.low_stock(), "expiry": services.expiry_alerts(), "low_ids": {l.item.pk for l in services.low_stock()}})
 
 
 @roles_required(*VIEW_ROLES)
@@ -46,10 +46,10 @@ def stock_ledger(request):
         stockable = Sku.objects.filter(pk=to_pk(choice[4:])).first()
     brought_forward, entries = services.ledger(stockable, dt_from, dt_to) if stockable else (0, [])
     if stockable and request.GET.get("export") in ("csv", "xlsx"):
-        rows = [(d_from, "Brought forward", "", "", "", brought_forward)] + [(m.moved_at.strftime("%Y-%m-%d %H:%M"), m.get_movement_type_display(), str(m.source), m.qty, m.unit_cost, bal)
+        rows = [(d_from, "Brought forward", "", "", "", "", brought_forward)] + [(m.moved_at.strftime("%Y-%m-%d %H:%M"), m.get_movement_type_display(), str(m.source), m.batch.number if m.batch_id else "", m.qty, m.unit_cost, bal)
                 for m, bal in entries]
         return export_response(request.GET["export"], f"stock-ledger-{stockable}-{d_from}-{d_to}",
-                               ["Date", "Type", "Source document", "Qty", "Unit cost", "Balance"], rows)
+                               ["Date", "Type", "Source document", "Batch", "Qty", "Unit cost", "Balance"], rows)
     options = [(f"item:{i.pk}", str(i)) for i in Item.objects.all()] + [(f"sku:{s.pk}", str(s)) for s in Sku.objects.all()]
     return render(request, "inventory/ledger.html", {"entries": entries, "stockable": stockable, "options": options,
                                                      "choice": choice, "brought_forward": brought_forward, "d_from": d_from, "d_to": d_to})
@@ -61,7 +61,7 @@ def adjust(request):
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         try:
-            services.adjust(d["item"] or d["sku"], d["qty"], d["reason"], request.user)
+            services.adjust(d["item"] or d["sku"], d["qty"], d["reason"], request.user, batch=d["batch"])
         except services.StockError as e:
             form.add_error(None, str(e))
         else:

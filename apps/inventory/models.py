@@ -43,9 +43,30 @@ class MovementType(models.TextChoices):
 ADJUSTMENT_TYPES = {MovementType.ADJUSTMENT, MovementType.OPENING, MovementType.REVERSAL}
 
 
+class Batch(models.Model):
+    """A lot of finished goods, created when a production run completes (or as an opening balance).
+    Stock is tracked per batch so dispatch can be first-expiry-first-out and recalls can be traced."""
+
+    sku = models.ForeignKey("masters.Sku", on_delete=models.PROTECT, related_name="fg_batches")
+    number = models.CharField(max_length=40, unique=True)
+    mfg_date = models.DateField()
+    expiry_date = models.DateField()
+    run = models.ForeignKey("production.ProductionRun", null=True, blank=True, on_delete=models.PROTECT, related_name="fg_batches")
+    note = models.CharField(max_length=120, blank=True)
+
+    class Meta:
+        ordering = ["expiry_date", "mfg_date", "id"]
+        constraints = [models.CheckConstraint(condition=Q(expiry_date__gte=models.F("mfg_date")), name="batch_expiry_after_mfg")]
+
+    def __str__(self):
+        return self.number
+
+
 class StockMovement(models.Model):
     item = models.ForeignKey("masters.Item", null=True, blank=True, on_delete=models.PROTECT, related_name="movements")
     sku = models.ForeignKey("masters.Sku", null=True, blank=True, on_delete=models.PROTECT, related_name="movements")
+    batch = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.PROTECT, related_name="movements",
+                              help_text="Finished goods only: which batch this movement belongs to")
     movement_type = models.CharField(max_length=24, choices=MovementType.choices)
     qty = models.DecimalField(max_digits=16, decimal_places=4, help_text="Signed, in the item's stock unit (SKU: packets)")
     unit_cost = models.DecimalField(max_digits=14, decimal_places=4, default=Decimal("0"))
@@ -66,6 +87,10 @@ class StockMovement(models.Model):
                 name="movement_item_xor_sku",
             ),
             models.CheckConstraint(condition=~Q(qty=0), name="movement_qty_nonzero"),
+            # finished goods are always tracked by batch; raw and packaging materials never are
+            models.CheckConstraint(
+                condition=(Q(item__isnull=False) & Q(batch__isnull=True)) | (Q(sku__isnull=False) & Q(batch__isnull=False)),
+                name="movement_batch_only_for_sku"),
         ]
         indexes = [models.Index(fields=["item", "moved_at"]), models.Index(fields=["sku", "moved_at"])]
 

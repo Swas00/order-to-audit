@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Batches{% endblock %}
+{% block content %}
+<h1>Batches and traceability</h1>
+<p class="muted">Every finished-goods batch with the run that made it. Open one to see which customers received it (for recalls).</p>
+<div class="scroll"><table><tr><th>Batch</th><th>Product</th><th>Source</th><th>Made</th><th>Expires</th><th>On hand</th></tr>
+{% for b, bal in rows %}<tr><td><a href="{% url 'batch_trace' b.pk %}">{{ b.number }}</a></td><td>{{ b.sku }}</td><td>{{ b.run.number|default:b.note }}</td><td>{{ b.mfg_date }}</td><td>{{ b.expiry_date }}</td><td>{{ bal|floatformat:"-3" }}</td></tr>
+{% empty %}<tr><td colspan="6">No batches yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

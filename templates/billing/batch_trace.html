@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Batch {{ batch.number }}{% endblock %}
+{% block content %}
+<h1>Batch {{ batch.number }}</h1>
+<p>{{ batch.sku }} · made {{ batch.mfg_date }} · expires {{ batch.expiry_date }} · on hand <strong>{{ on_hand|floatformat:"-3" }}</strong>
+{% if batch.run %} · produced by <a href="{% url 'run_detail' batch.run.pk %}">{{ batch.run.number }}</a>{% else %} · {{ batch.note }}{% endif %}</p>
+<h2>Dispatched to</h2>
+<div class="scroll"><table><tr><th>Invoice</th><th>Customer</th><th>Packets from this batch</th></tr>
+{% for inv, cust, qty in shipments %}<tr><td>{% if user.role != 'production' %}<a href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a>{% else %}{{ inv.number }}{% endif %}</td><td>{{ cust }}</td><td>{{ qty|floatformat:"-3" }}</td></tr>
+{% empty %}<tr><td colspan="3">Not dispatched yet.</td></tr>{% endfor %}</table></div>
+<p class="muted">Cancelled invoices whose goods were returned still appear here as dispatched; check the invoice status.</p>
+{% endblock %}

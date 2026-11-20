@@ -4,6 +4,7 @@
 <h1>Stock summary</h1>
 {% if low %}<div class="card"><strong class="st-flag">Low stock:</strong> {% for l in low %}{{ l.item.name }} {{ l.balance|floatformat:"-3" }} {{ l.item.unit }} (level {{ l.level|floatformat:"-3" }}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'low-stock' %}">Details</a></div>{% endif %}
 {% include "filters.html" %}
+{% if expiry %}<div class="card"><strong class="st-flag">Expiry:</strong> {% for e in expiry %}{{ e.batch.number }} ({{ e.on_hand|floatformat:"-3" }}, {% if e.expired %}expired{% else %}{{ e.days_left }} days left{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'batches' %}">Batches</a></div>{% endif %}
 {% for title, rows in sections %}
 <h2>{{ title }}</h2>
 <div class="scroll"><table>
@@ -13,5 +14,5 @@
   {% empty %}<tr><td colspan="7">Nothing here yet.</td></tr>{% endfor %}
 </table></div>
 {% endfor %}
-<p><a href="{% url 'stock_ledger' %}">Stock ledger</a>{% if user.role == 'admin' or user.role == 'production' %} · <a href="{% url 'stock_adjust' %}">Adjust stock</a>{% endif %}</p>
+<p><a href="{% url 'stock_ledger' %}">Stock ledger</a> · <a href="{% url 'report' 'batches' %}">Batches and expiry</a>{% if user.role == 'admin' or user.role == 'production' %} · <a href="{% url 'stock_adjust' %}">Adjust stock</a>{% endif %}</p>
 {% endblock %}

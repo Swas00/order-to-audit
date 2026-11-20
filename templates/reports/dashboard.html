@@ -14,6 +14,7 @@
 <div class="card">{% for run, flags in alerts %}<p><a href="{% url 'run_detail' run.pk %}">{{ run.number }}</a> {{ run.sku }}: <span class="st-flag">{{ flags|join:", " }}</span></p>
 {% empty %}<p class="st-ok">No flagged variances.</p>{% endfor %}</div>
 {% if low %}<h2>Low stock</h2><div class="card">{% for i in low %}<p class="st-flag">{{ i.name }} is at or below its reorder level ({{ i.reorder_level|floatformat:"-3" }} {{ i.unit }})</p>{% endfor %}</div>{% endif %}
+{% if expiry %}<h2>Expiry alerts</h2><div class="card">{% for e in expiry %}<p class="st-flag">{{ e.batch.sku }} batch {{ e.batch.number }}: {{ e.on_hand|floatformat:"-3" }} packets, {% if e.expired %}expired {{ e.days_left|cut:"-" }} day{{ e.days_left|cut:"-"|pluralize }} ago, cannot be sold{% else %}expires in {{ e.days_left }} day{{ e.days_left|pluralize }} ({{ e.batch.expiry_date }}){% endif %}</p>{% endfor %}<a href="{% url 'report' 'batches' %}">Batch report</a></div>{% endif %}
 <h2>Cost per packet (this month)</h2>
 <div class="scroll"><table><tr><th>Product</th><th>Cost ₹</th><th>Price ₹</th><th>Margin %</th></tr>
 {% for s in costs %}<tr><td>{{ s.sku }}</td><td>{{ s.per_packet|floatformat:2 }}</td><td>{{ s.price }}</td><td>{{ s.margin_pct }}%</td></tr>{% empty %}<tr><td colspan="4">No completed runs this month.</td></tr>{% endfor %}</table></div>

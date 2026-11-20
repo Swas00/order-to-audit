@@ -86,6 +86,7 @@ class Sku(models.Model):
         max_digits=5, decimal_places=2, null=True, blank=True,
         help_text="Overrides the global tolerance (3%) for this SKU",
     )
+    shelf_life_days = models.PositiveIntegerField(default=90, help_text="Days from manufacture to expiry; sets each new batch's expiry")
     pouch_item = models.ForeignKey(
         "Item", null=True, blank=True, on_delete=models.PROTECT, related_name="+",
         help_text="Primary pack (pouch): one used per good packet, plus damaged ones recorded as wastage",

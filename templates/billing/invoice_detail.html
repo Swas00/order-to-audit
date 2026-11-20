@@ -11,6 +11,7 @@
 </table></div>
 <p>Taxable ₹{{ inv.taxable_total }} · {% if inv.intra_state %}CGST ₹{{ inv.cgst_total }} + SGST ₹{{ inv.sgst_total }}{% else %}IGST ₹{{ inv.igst_total }}{% endif %} · round-off ₹{{ inv.round_off }}<br>
 <strong>Total ₹{{ inv.grand_total }}</strong> · paid ₹{{ inv.paid }} · <strong>outstanding ₹{{ inv.outstanding }}</strong></p>
+{% if shipped %}<p>Dispatched from batches: {% for b, q in shipped %}<strong>{{ b.number }}</strong> ({{ q|floatformat:"-3" }} packets, expires {{ b.expiry_date }}){% if not forloop.last %}; {% endif %}{% endfor %}</p>{% endif %}
 <p><a class="btn small" href="{% url 'invoice_pdf' inv.pk %}" target="_blank">Download PDF</a>
 <a class="btn small" href="{{ wa_link }}" target="_blank" rel="noopener">Share on WhatsApp</a>
 <a class="btn small" href="{{ mail_link }}">Email</a>

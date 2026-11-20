@@ -2,6 +2,7 @@
 inventory service, and is recorded in the audit log."""
 
 from dataclasses import dataclass
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.contenttypes.models import ContentType
@@ -11,7 +12,7 @@ from django.utils import timezone
 
 from apps.audit.models import record
 from apps.inventory import services as stock
-from apps.inventory.models import MovementType, StockMovement
+from apps.inventory.models import Batch, MovementType, StockMovement
 from apps.masters.bom import planned_consumption, planned_output
 from apps.masters.models import CompanyProfile, Item, ItemKind, Sku
 
@@ -102,11 +103,15 @@ def complete_run(run, good_packets, damaged_pouches, packaging_used, user, remar
 
     if good > 0:
         cost = material_cost(run)
-        stock.receive(run.sku, good, cost / good, run, MovementType.PRODUCTION_OUTPUT, note=run.number)
+        made = timezone.localdate()
+        batch = Batch.objects.create(sku=run.sku, number=f"{run.sku.code}-{made:%y%m%d}-{run.pk:03d}", mfg_date=made,
+                                     expiry_date=made + timedelta(days=run.sku.shelf_life_days), run=run)
+        stock.receive(run.sku, good, cost / good, run, MovementType.PRODUCTION_OUTPUT, note=f"{run.number} batch {batch.number}",
+                      batch=batch)
     run.good_packets, run.damaged_pouches, run.remark = good, damaged, remark
     run.status, run.completed_at = RunStatus.COMPLETED, timezone.now()
     run.save()
-    record(user, run, "completed", good_packets=good, damaged_pouches=damaged,
+    record(user, run, "completed", batch=batch.number if good > 0 else None, good_packets=good, damaged_pouches=damaged,
            packaging={i.name: str(q) for i, q in packaging_used.items()}, remark=remark)
     return run
 

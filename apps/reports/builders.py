@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from django.db.models import Sum
+from django.utils import timezone
 
 from apps.billing import services as billing
 from apps.billing.models import CreditNote, Invoice, InvoiceStatus, Payment
@@ -196,7 +197,8 @@ def stock_ledger_all(d_from, d_to):
         for s in qs():
             bf, entries = stock.ledger(s, dt_from, dt_to)
             rows.append((str(s), "", "Brought forward", "", "", bf))
-            rows += [(str(s), m.moved_at.strftime("%Y-%m-%d %H:%M"), m.get_movement_type_display(), str(m.source), m.qty, bal) for m, bal in entries]
+            rows += [(str(s), m.moved_at.strftime("%Y-%m-%d %H:%M"), m.get_movement_type_display(),
+                      f"{m.source}" + (f" [batch {m.batch.number}]" if m.batch_id else ""), m.qty, bal) for m, bal in entries]
         tables.append(Table(f"Stock ledger: {title}", ["Item", "Date", "Type", "Source document", "Qty", "Balance"], rows))
     return tables
 
@@ -251,3 +253,18 @@ def low_stock_report(d_from, d_to):
              "Out of stock" if l.balance <= 0 else "At or below reorder level") for l in stock.low_stock()]
     return [Table("Items at or below reorder level", ["Type", "Item", "Unit", "On hand", "Reorder level", "Shortfall to level", "Status"], rows,
                   "Current position (date range ignored). Reorder levels are set per item in master data.")]
+
+
+def batch_report(d_from, d_to):
+    from apps.inventory.models import Batch
+    today = timezone.localdate()
+    rows = []
+    for b in Batch.objects.select_related("sku", "run").order_by("sku__product_name", "expiry_date"):
+        bal = stock.batch_balance(b)
+        if bal == 0:
+            continue
+        days = (b.expiry_date - today).days
+        status = "EXPIRED: cannot be sold" if days < 0 else ("Expires soon" if days <= stock.NEAR_EXPIRY_DAYS else "OK")
+        rows.append((str(b.sku), b.number, b.run.number if b.run else b.note, b.mfg_date, b.expiry_date, days, bal, status))
+    return [Table("Finished goods by batch (first expiry first)", ["Product", "Batch", "Source", "Made", "Expires", "Days left", "On hand", "Status"], rows,
+                  f"Dispatch takes the earliest-expiring non-expired batch first. 'Expires soon' = within {stock.NEAR_EXPIRY_DAYS} days.")]

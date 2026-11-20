@@ -5,6 +5,7 @@
 <p class="muted">Each report has a date range and exports to CSV, Excel and PDF.</p>
 <div class="card"><ul>
 {% for slug, title, desc in reports %}<li><a href="{% url 'report' slug %}"><strong>{{ title }}</strong></a>: {{ desc }}</li>{% endfor %}
+<li><a href="{% url 'batch_list' %}"><strong>Batch trace (recall)</strong></a>: which customers received a batch</li>
 <li><a href="{% url 'costing' %}"><strong>Cost per packet</strong></a>: cost and margin by product and run</li>
 <li><a href="{% url 'stock_ledger' %}"><strong>Stock ledger for one item</strong></a></li>
 </ul></div>

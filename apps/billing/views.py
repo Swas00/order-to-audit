@@ -32,8 +32,14 @@ def invoice_detail(request, pk):
     public = request.build_absolute_uri(f"/i/{inv.share_token}.pdf")
     text = quote(f"Tax invoice {inv.number} from {inv.supplier_name}, total Rs. {inv.grand_total}. PDF: {public}")
     phone = "".join(c for c in inv.customer.phone if c.isdigit())
+    shipped = []
+    if inv.is_dispatched:
+        from apps.inventory.models import StockMovement
+        from django.contrib.contenttypes.models import ContentType
+        ct = ContentType.objects.get_for_model(inv.dispatch)
+        shipped = [(m.batch, -m.qty) for m in StockMovement.objects.filter(source_type=ct, source_id=inv.dispatch.pk).select_related("batch")]
     return render(request, "billing/invoice_detail.html", {
-        "inv": inv, "history": history(inv), "is_admin": request.user.role == Role.ADMIN,
+        "shipped": shipped, "inv": inv, "history": history(inv), "is_admin": request.user.role == Role.ADMIN,
         "wa_link": f"https://wa.me/{phone}?text={text}", "mail_link": f"mailto:?subject={quote('Tax invoice ' + inv.number)}&body={text}"})
 
 
@@ -123,3 +129,20 @@ def receivables(request):
     from apps.masters.models import Customer
     rows = [{"customer": c, "balance": services.customer_balance(c)} for c in Customer.objects.all()]
     return render(request, "billing/receivables.html", {"rows": [r for r in rows if r["balance"] != 0], "ageing": services.ageing()})
+
+
+@roles_required(Role.ADMIN, Role.PRODUCTION, Role.ACCOUNTANT, Role.OWNER)
+def batch_list(request):
+    from apps.inventory import services as stock
+    from apps.inventory.models import Batch
+    rows = [(b, stock.batch_balance(b)) for b in Batch.objects.select_related("sku", "run")]
+    return render(request, "billing/batch_list.html", {"rows": rows})
+
+
+@roles_required(Role.ADMIN, Role.PRODUCTION, Role.ACCOUNTANT, Role.OWNER)
+def batch_trace(request, pk):
+    from apps.inventory import services as stock
+    from apps.inventory.models import Batch
+    batch = get_object_or_404(Batch.objects.select_related("sku", "run"), pk=pk)
+    return render(request, "billing/batch_trace.html", {"batch": batch, "on_hand": stock.batch_balance(batch),
+                                                       "shipments": services.batch_trace(batch)})

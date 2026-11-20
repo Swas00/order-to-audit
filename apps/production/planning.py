@@ -74,7 +74,7 @@ def plan(include_submitted=True) -> list[PlanRow]:
         if bom is None:
             continue
         submitted = _demand(sku, [OrderStatus.SUBMITTED]) if include_submitted else 0
-        row = PlanRow(sku, stock.balance(sku), submitted, _demand(sku, COMMITTED), 0, bom.batch_yield)
+        row = PlanRow(sku, stock.saleable_balance(sku), submitted, _demand(sku, COMMITTED), 0, bom.batch_yield)
         row.batches = math.ceil(row.net_need / bom.batch_yield) if row.net_need > 0 else 0
         if row.batches:
             row.materials = [MaterialNeed(p.item_name, p.unit, p.planned_qty, stock.balance(Item.objects.get(pk=p.item_id)))

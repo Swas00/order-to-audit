@@ -21,6 +21,7 @@
  Shortfall {{ report.wastage_packets|floatformat:"-2" }} packets, of which {{ run.damaged_pouches }} pouches damaged.
  Material cost ₹{{ report.material_cost|floatformat:2 }}.{% if run.remark %} Remark: {{ run.remark }}{% endif %}</p>
 {% endif %}
+{% for b in run.fg_batches.all %}<p>Finished-goods batch: <strong>{{ b.number }}</strong> · made {{ b.mfg_date }} · expires {{ b.expiry_date }}</p>{% endfor %}
 {% if run.status == 'voided' %}<p class="error">Voided: {{ run.void_reason }}</p>{% endif %}
 
 {% if can_write and in_progress %}
