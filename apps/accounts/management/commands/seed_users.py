@@ -2,7 +2,10 @@
 
 from django.core.management.base import BaseCommand
 
+from django.contrib.auth.models import Group
+
 from apps.accounts.models import Role, User
+from apps.accounts.roles_setup import setup_role_groups
 
 DEMO_PASSWORD = "demo12345"
 
@@ -17,11 +20,13 @@ DEMO_USERS = [
 
 
 def seed_users():
+    setup_role_groups()
     for username, first, last, role in DEMO_USERS:
         user, _ = User.objects.get_or_create(username=username)
         user.first_name, user.last_name, user.role = first, last, role
         user.set_password(DEMO_PASSWORD)
         user.save()
+        user.groups.set(Group.objects.filter(name=role))
 
 
 class Command(BaseCommand):
