@@ -2,13 +2,14 @@
 {% block title %}Stock summary{% endblock %}
 {% block content %}
 <h1>Stock summary</h1>
+{% if low %}<div class="card"><strong class="st-flag">Low stock:</strong> {% for l in low %}{{ l.item.name }} {{ l.balance|floatformat:"-3" }} {{ l.item.unit }} (level {{ l.level|floatformat:"-3" }}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'low-stock' %}">Details</a></div>{% endif %}
 {% include "filters.html" %}
 {% for title, rows in sections %}
 <h2>{{ title }}</h2>
 <div class="scroll"><table>
   <tr><th>Item</th><th>Opening</th><th>Receipts</th><th>Issues</th><th>Adjust.</th><th>Closing</th><th>Value ₹</th></tr>
   {% for r in rows %}
-  <tr><td>{{ r.stockable }}</td><td>{{ r.opening|floatformat:"-3" }}</td><td>{{ r.receipts|floatformat:"-3" }}</td><td>{{ r.issues|floatformat:"-3" }}</td><td>{{ r.adjustments|floatformat:"-3" }}</td><td><strong>{{ r.closing|floatformat:"-3" }}</strong></td><td>{{ r.value|floatformat:2 }}</td></tr>
+  <tr class="{% if r.stockable.pk in low_ids and r.stockable.unit %}short{% endif %}"><td>{{ r.stockable }}</td><td>{{ r.opening|floatformat:"-3" }}</td><td>{{ r.receipts|floatformat:"-3" }}</td><td>{{ r.issues|floatformat:"-3" }}</td><td>{{ r.adjustments|floatformat:"-3" }}</td><td><strong>{{ r.closing|floatformat:"-3" }}</strong></td><td>{{ r.value|floatformat:2 }}</td></tr>
   {% empty %}<tr><td colspan="7">Nothing here yet.</td></tr>{% endfor %}
 </table></div>
 {% endfor %}

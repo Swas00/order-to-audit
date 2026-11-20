@@ -31,7 +31,8 @@ def stock_summary(request):
                 for title, data in sections for r in data]
         return export_response(request.GET["export"], f"stock-summary-{d_from}-{d_to}",
                                ["Group", "Item", "Opening", "Receipts", "Issues", "Adjustments", "Closing", "Value (INR)"], rows)
-    return render(request, "inventory/summary.html", {"sections": sections, "d_from": d_from, "d_to": d_to})
+    return render(request, "inventory/summary.html", {"sections": sections, "d_from": d_from, "d_to": d_to,
+                                                       "low": services.low_stock(), "low_ids": {l.item.pk for l in services.low_stock()}})
 
 
 @roles_required(*VIEW_ROLES)

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Production plan{% endblock %}
+{% block content %}
+<h1>Production plan from pending orders</h1>
+<p class="muted">Demand = orders waiting for approval{% if not include %} (excluded){% endif %} + approved or invoiced orders not yet dispatched. Net need = demand minus finished goods in stock; batches are rounded up to whole standard batches.</p>
+<p><a class="btn small" href="?submitted={% if include %}0{% else %}1{% endif %}">{% if include %}Only count approved orders{% else %}Include orders waiting for approval{% endif %}</a></p>
+{% for r in rows %}
+<div class="card" style="margin-bottom:12px">
+  <h2>{{ r.sku }}</h2>
+  <p>In stock <strong>{{ r.in_stock|floatformat:"-3" }}</strong> · waiting approval {{ r.submitted }} · approved, not dispatched {{ r.committed }} · net need <strong>{{ r.net_need|floatformat:"-3" }}</strong></p>
+  {% if r.batches %}
+  <p class="big">Make {{ r.batches }} batch{{ r.batches|pluralize:"es" }}</p>
+  <p>{{ r.batches }} × {{ r.batch_yield }} = {{ r.output }} packets expected.
+     {% if r.can_make %}<span class="st-ok">Materials in stock cover it.</span>{% else %}<span class="st-flag">Short of materials: buy before starting.</span>{% endif %}</p>
+  <div class="scroll"><table><tr><th>Material</th><th>Needed</th><th>On hand</th><th>Short</th></tr>
+  {% for m in r.materials %}<tr class="{% if m.short %}short{% endif %}"><td>{{ m.item_name }} ({{ m.unit }})</td><td>{{ m.needed|floatformat:"-3" }}</td><td>{{ m.on_hand|floatformat:"-3" }}</td><td>{% if m.short %}<span class="st-flag">{{ m.short|floatformat:"-3" }}</span>{% else %}-{% endif %}</td></tr>{% endfor %}</table></div>
+  {% if can_write %}<form method="post" action="{% url 'run_start' %}">{% csrf_token %}<input type="hidden" name="sku" value="{{ r.sku.pk }}"><input type="hidden" name="batches" value="{{ r.batches }}"><button class="btn" type="submit">Start run of {{ r.batches }} batch{{ r.batches|pluralize:"es" }}</button></form>{% endif %}
+  {% else %}<p class="st-ok">Stock covers all pending orders. Nothing to make.</p>{% endif %}
+</div>
+{% empty %}<p>No products with an active BOM.</p>{% endfor %}
+{% endblock %}

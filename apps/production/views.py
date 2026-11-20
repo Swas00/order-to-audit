@@ -91,3 +91,10 @@ def run_void(request, pk):
     except (StockError, services.ProductionError) as e:
         _fail(request, e)
     return redirect("run_detail", pk=pk)
+
+
+@roles_required(*VIEW)
+def run_plan(request):
+    from . import planning
+    include = request.GET.get("submitted", "1") != "0"
+    return render(request, "production/plan.html", {"rows": planning.plan(include), "include": include, "can_write": request.user.role in WRITE})

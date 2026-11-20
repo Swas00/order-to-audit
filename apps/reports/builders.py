@@ -244,3 +244,10 @@ def outstanding(d_from, d_to):
                   f"Balance now. Ageing and open invoices as of {d_to}."),
             Table(f"Ageing as of {d_to} (days since invoice date)", ["Customer", "0-30", "31-60", "61-90", "90+", "Total"], age),
             Table("Open invoices", ["Customer", "Invoice", "Date", "Age (days)", "Invoice value", "Paid", "Outstanding"], inv_rows)]
+
+
+def low_stock_report(d_from, d_to):
+    rows = [(l.item.get_kind_display(), l.item.name, l.item.unit.code, l.balance, l.level, l.shortfall,
+             "Out of stock" if l.balance <= 0 else "At or below reorder level") for l in stock.low_stock()]
+    return [Table("Items at or below reorder level", ["Type", "Item", "Unit", "On hand", "Reorder level", "Shortfall to level", "Status"], rows,
+                  "Current position (date range ignored). Reorder levels are set per item in master data.")]

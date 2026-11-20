@@ -197,3 +197,24 @@ def reverse_source(source, note, moved_at=None):
             raise InsufficientStock(stockable, balance(stockable), m.qty)
         _post(stockable, MovementType.REVERSAL, -m.qty, m.unit_cost, source, moved_at, note)
     return len(originals)
+
+
+@dataclass
+class LowStock:
+    item: Item
+    balance: Decimal
+    level: Decimal
+
+    @property
+    def shortfall(self):
+        return self.level - self.balance
+
+
+def low_stock() -> list[LowStock]:
+    """Active items whose balance is at or below their reorder level (items with no level set are ignored)."""
+    out = []
+    for item in Item.objects.filter(active=True, reorder_level__isnull=False):
+        b = balance(item)
+        if b <= item.reorder_level:
+            out.append(LowStock(item, b, item.reorder_level))
+    return sorted(out, key=lambda x: x.item.name)

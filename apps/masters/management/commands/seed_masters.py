@@ -26,6 +26,9 @@ ITEMS = [
     ("CARTON20", "Carton (holds 20 packets)", ItemKind.PACKAGING, "piece", "15"),
 ]
 
+# Reorder levels (our assumption; the brief gives none). Chosen so the benchmark visibly trips two alerts.
+REORDER = {"FLOUR": "50", "OIL": "20", "SPICE": "2", "POUCH200": "200", "CARTON20": "25"}
+
 # item code, quantity per batch, unit
 BOM_LINES = [("FLOUR", "40", "kg"), ("OIL", "10", "L"), ("SPICE", "1.2", "kg"),
              ("POUCH200", "200", "piece"), ("CARTON20", "10", "piece")]
@@ -38,6 +41,8 @@ def seed_masters():
                    state_name="Tamil Nadu", address="Tiruchirappalli, Tamil Nadu").save()
     items = {c: Item.objects.update_or_create(code=c, defaults=dict(name=n, kind=k, unit=units[u], standard_rate=D(r)))[0]
              for c, n, k, u, r in ITEMS}
+    for code, level in REORDER.items():
+        Item.objects.filter(code=code).update(reorder_level=D(level))
     sku, _ = Sku.objects.update_or_create(code="MUR200", defaults=dict(
         product_name="Murukku", pack_size="200 g", hsn_code="19059030", gst_rate=D("5"),
         selling_price=D("50"), packets_per_carton=20, pouch_item=items["POUCH200"]))

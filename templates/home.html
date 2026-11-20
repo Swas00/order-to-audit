@@ -23,6 +23,7 @@
   <li><a href="{% url 'stock_ledger' %}">Stock ledger</a></li>
   <li><a href="{% url 'purchase_list' %}">Purchases</a></li>
   <li><a href="{% url 'run_list' %}">Production runs</a></li>
+  <li><a href="{% url 'run_plan' %}">Production plan</a></li>
   <li><a href="{% url 'costing' %}">Cost per packet</a></li>
   {% if user.role != 'production' %}
   <li><a href="{% url 'invoice_list' %}">Invoices</a></li>

@@ -48,6 +48,7 @@ urlpatterns = [
     path("reports/<slug:slug>/", rep.report, name="report"),
     path("dashboard/", rep.dashboard, name="dashboard"),
     path("production/", prod.run_list, name="run_list"),
+    path("production/plan/", prod.run_plan, name="run_plan"),
     path("production/start/", prod.run_start, name="run_start"),
     path("production/<int:pk>/", prod.run_detail, name="run_detail"),
     path("production/<int:pk>/issue/", prod.run_issue, name="run_issue"),

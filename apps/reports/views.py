@@ -30,6 +30,7 @@ REPORTS = {
     "product-sales": ("Product-wise sales", builders.product_sales, FIN, "Packets and value per product"),
     "gst-summary": ("GST summary (GSTR-1 / GSTR-3B)", builders.gst_summary, FIN, "Outward supplies in GSTR-1 table shapes"),
     "purchase-register": ("Purchase register", builders.purchase_register, FLOOR, "Supplier bills line by line"),
+    "low-stock": ("Low-stock alerts", builders.low_stock_report, FLOOR, "Raw and packaging items at or below reorder level"),
     "stock-summary": ("Stock summary", builders.stock_summary, FLOOR, "Opening, receipts, issues, adjustments, closing"),
     "stock-ledger": ("Stock ledger (all items)", builders.stock_ledger_all, FLOOR, "Every movement with running balance"),
     "production": ("Production report", builders.production_report, FLOOR, "Planned vs actual consumption, yield, wastage"),
@@ -78,13 +79,10 @@ def dashboard(request):
         value += o.taxable_total
     docs = builders.sales_docs(month_start, today)
     stock_rows = []
-    low = []
+    low_items = {l.item.pk for l in stock.low_stock()}
+    low = [l.item for l in stock.low_stock()]
     for item in Item.objects.filter(active=True):
-        b = stock.balance(item)
-        is_low = item.reorder_level is not None and b <= item.reorder_level
-        stock_rows.append((item.get_kind_display(), str(item), b, is_low))
-        if is_low:
-            low.append(item)
+        stock_rows.append((item.get_kind_display(), str(item), stock.balance(item), item.pk in low_items))
     for sku in Sku.objects.filter(active=True):
         stock_rows.append(("Finished goods", str(sku), stock.balance(sku), False))
     alerts = []
