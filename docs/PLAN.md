@@ -13,6 +13,7 @@ Source: "Problem Statement - Winter Internship Application - 2026" (7 pages). St
 | Q5 | Stock | Stock check shown at approval; no reservation; deduct at dispatch. Shortage: admin may approve a partial quantity or reject; invoice only for what is approved | Avoids phantom reservations; matches B-10 |
 | Q6 | Consumption | Two stages: raw materials consumed at issue to the run; packaging and damage recorded at completion; FG held in packets; cartons are a consumable | Matches benchmark steps 2-3 and the 306 pouch check |
 | Q7 | Tolerance | Global 3% default, per-product override | Matches brief example |
+| Q7b | Variance flags (confirmed by candidate after M4) | Only adverse variances beyond tolerance are FLAGGED (more material than planned, less yield than planned); favourable ones beyond tolerance are shown as notes; exactly at tolerance is OK | Benchmark lists only yield and oil as flagged; cartons (-10%) must not be an alert |
 | Q8 | Reports | CSV/XLSX for all reports; PDF for invoice, GST summary, stock summary, production report | Meets must-haves without PDF bloat |
 | Q9 | Hosting | `docker compose up` is the primary run path; hosted demo only if time remains | Meets Deployability bullet |
 | Q10 | Deadline | UNKNOWN: candidate must confirm | Brief placeholders unfilled |

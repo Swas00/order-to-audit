@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Customer-wise sales{% endblock %}
+{% block content %}
+<h1>Customer-wise sales</h1>
+<p class="muted">Approved orders, value before GST.</p>
+<div class="scroll"><table><tr><th>Customer</th><th>Orders</th><th>Packets</th><th>Value ₹</th></tr>
+{% for r in rows %}<tr><td>{{ r.customer }}</td><td>{{ r.orders }}</td><td>{{ r.packets }}</td><td>{{ r.value }}</td></tr>
+{% empty %}<tr><td colspan="4">No approved orders yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

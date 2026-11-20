@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block content %}
+<h1>{{ order.number }} <small>({{ order.get_status_display }})</small></h1>
+<p>{{ order.customer }} · {{ order.customer.state_name }} · by {{ order.salesman.get_full_name|default:order.salesman.username }} · {{ order.created_at|date:"d M Y H:i" }}{% if order.note %}<br>Note: {{ order.note }}{% endif %}
+{% if order.status == 'rejected' %}<br><span class="error">Rejected: {{ order.reject_reason }}</span>{% endif %}</p>
+
+{% if can_review %}
+<form method="post" action="{% url 'order_approve' order.pk %}">{% csrf_token %}
+<div class="scroll"><table>
+  <tr><th>Product</th><th>Ordered</th><th>Qty</th><th>Price ₹</th><th>In stock</th><th>Promised to others</th><th>Available</th><th>Shortage</th></tr>
+  {% for c in coverage %}
+  <tr class="{% if not c.covered %}short{% endif %}"><td>{{ c.line.sku }}</td><td>{{ c.line.ordered_qty }}</td>
+    <td><input name="qty_{{ c.line.pk }}" type="number" min="0" value="{{ c.line.qty }}" style="width:5em"></td>
+    <td><input name="price_{{ c.line.pk }}" type="number" min="0" step="0.01" value="{{ c.line.price }}" style="width:6em"></td>
+    <td>{{ c.in_stock|floatformat:"-3" }}</td><td>{{ c.committed }}</td><td>{{ c.available|floatformat:"-3" }}</td>
+    <td>{% if c.covered %}<span class="st-ok">covered</span>{% else %}<span class="st-flag">short by {{ c.shortage }}</span>{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+<button class="btn" type="submit">Approve as entered</button>
+<button class="btn" type="submit" name="available" value="1">Approve only what stock covers</button>
+</form>
+<form method="post" action="{% url 'order_reject' order.pk %}" style="margin-top:12px">{% csrf_token %}
+  <input name="reason" placeholder="Reason for rejecting" required><button class="btn" type="submit">Reject order</button></form>
+{% else %}
+<div class="scroll"><table>
+  <tr><th>Product</th><th>Ordered</th><th>Approved / current qty</th><th>Price ₹</th><th>Amount ₹</th></tr>
+  {% for l in order.lines.all %}<tr><td>{{ l.sku }}</td><td>{{ l.ordered_qty }}</td><td>{{ l.qty }}</td><td>{{ l.price }}</td><td>{{ l.amount }}</td></tr>{% endfor %}
+  <tr><td colspan="4"><strong>Taxable total (GST added on invoice)</strong></td><td><strong>{{ order.taxable_total }}</strong></td></tr>
+</table></div>
+{% endif %}
+<h2>History</h2>
+<ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail }}</li>{% endfor %}</ul>
+{% endblock %}

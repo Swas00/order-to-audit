@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}New order{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>New order</h1>
+  <form method="post" id="orderForm">{% csrf_token %}
+    <input type="hidden" name="client_uuid" value="{{ client_uuid }}">
+    <label for="customer">Customer</label>
+    <select id="customer" name="customer" required>
+      <option value="">Choose customer</option>
+      {% for c in customers %}<option value="{{ c.pk }}" {% if selected and selected.pk == c.pk %}selected{% endif %}>{{ c.name }} ({{ c.state_name }})</option>{% endfor %}
+    </select>
+    <div id="rows">
+    {% for s in skus %}
+      <label for="qty_{{ s.pk }}">{{ s }} <span class="muted">₹<span class="price" data-sku="{{ s.pk }}">{{ s.selling_price }}</span> / packet</span></label>
+      <input id="qty_{{ s.pk }}" name="qty_{{ s.pk }}" type="number" inputmode="numeric" min="0" step="1" placeholder="Packets" data-sku="{{ s.pk }}" class="qty" value="{{ s.entered }}">
+    {% endfor %}
+    </div>
+    <label for="note">Note (optional)</label>
+    <input id="note" name="note" maxlength="250">
+    <p>Estimated total (before GST): <strong>₹<span id="total">0.00</span></strong></p>
+    <button class="btn" type="submit" id="submitBtn">Submit order</button>
+  </form>
+</div>
+{{ prices|json_script:"prices" }}
+<script>
+(function () {
+  var prices = JSON.parse(document.getElementById("prices").textContent);
+  var sel = document.getElementById("customer");
+  function refresh() {
+    var p = prices[sel.value] || {}, total = 0;
+    document.querySelectorAll(".price").forEach(function (el) { if (p[el.dataset.sku]) el.textContent = p[el.dataset.sku]; });
+    document.querySelectorAll(".qty").forEach(function (q) {
+      var price = parseFloat(p[q.dataset.sku] || document.querySelector('.price[data-sku="' + q.dataset.sku + '"]').textContent);
+      total += (parseInt(q.value, 10) || 0) * price;
+    });
+    document.getElementById("total").textContent = total.toFixed(2);
+  }
+  sel.addEventListener("change", refresh);
+  document.querySelectorAll(".qty").forEach(function (q) { q.addEventListener("input", refresh); });
+  document.getElementById("orderForm").addEventListener("submit", function () {
+    var b = document.getElementById("submitBtn"); b.disabled = true; b.textContent = "Submitting...";
+  });
+  refresh();
+})();
+</script>
+{% endblock %}

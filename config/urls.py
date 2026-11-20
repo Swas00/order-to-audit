@@ -6,6 +6,7 @@ from apps.accounts import views as account_views
 from apps.inventory import views as inv
 from apps.production import views as prod
 from apps.purchasing import views as pur
+from apps.sales import views as sales
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,6 +16,12 @@ urlpatterns = [
     path("stock/", inv.stock_summary, name="stock_summary"),
     path("stock/ledger/", inv.stock_ledger, name="stock_ledger"),
     path("stock/adjust/", inv.adjust, name="stock_adjust"),
+    path("orders/", sales.order_list, name="order_list"),
+    path("orders/new/", sales.order_new, name="order_new"),
+    path("orders/<int:pk>/", sales.order_detail, name="order_detail"),
+    path("orders/<int:pk>/approve/", sales.order_approve, name="order_approve"),
+    path("orders/<int:pk>/reject/", sales.order_reject, name="order_reject"),
+    path("sales/customers/", sales.customer_sales, name="customer_sales"),
     path("production/", prod.run_list, name="run_list"),
     path("production/start/", prod.run_start, name="run_start"),
     path("production/<int:pk>/", prod.run_detail, name="run_detail"),
