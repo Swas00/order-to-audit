@@ -15,7 +15,7 @@ from apps.masters.models import Customer, Sku
 from apps.sales import services as sales
 
 pytestmark = pytest.mark.django_db
-PUBLIC = {"login", "logout", "shared_invoice_pdf"}
+PUBLIC = {"login", "logout", "shared_invoice_pdf", "service_worker", "manifest", "order_api_submit"}  # api: JSON 401, tested separately
 
 
 @pytest.fixture
@@ -46,6 +46,11 @@ def test_every_route_requires_login(world):
         for method in (anon.get, anon.post):
             r = method(url)
             assert r.status_code == 302 and "/login/" in r["Location"], (name, url, method.__name__, r.status_code)
+
+
+def test_order_api_rejects_anonymous_with_401(world):
+    r = Client().post(reverse("order_api_submit"), "{}", content_type="application/json")
+    assert r.status_code == 401 and r.json()["ok"] is False
 
 
 # role -> routes (GET) it must NOT be able to open: expect 403 (or 404 for object lookups of others' data)

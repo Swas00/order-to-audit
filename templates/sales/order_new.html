@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}New order{% endblock %}
 {% block content %}
+<p id="syncBanner" class="sync" hidden role="status"></p>
 <div class="card">
   <h1>New order</h1>
   <form method="post" id="orderForm">{% csrf_token %}
@@ -22,7 +24,10 @@
     <button class="btn" type="submit" id="submitBtn">Submit order</button>
   </form>
 </div>
+<div id="pendingOrders"></div>
 {{ prices|json_script:"prices" }}
+{{ offline_config|json_script:"offline-config" }}
+<script src="{% static 'sales/offline.js' %}"></script>
 <script>
 (function () {
   var prices = JSON.parse(document.getElementById("prices").textContent);
@@ -38,9 +43,6 @@
   }
   sel.addEventListener("change", refresh);
   document.querySelectorAll(".qty").forEach(function (q) { q.addEventListener("input", refresh); });
-  document.getElementById("orderForm").addEventListener("submit", function () {
-    var b = document.getElementById("submitBtn"); b.disabled = true; b.textContent = "Submitting...";
-  });
   refresh();
 })();
 </script>

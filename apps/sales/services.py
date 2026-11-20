@@ -37,6 +37,8 @@ def create_order(salesman, customer: Customer, quantities: dict, client_uuid=Non
     if client_uuid:
         existing = Order.objects.filter(client_uuid=client_uuid).first()
         if existing:
+            if existing.salesman_id != salesman.pk:
+                raise OrderError("This submission reference is already used")
             return existing
     if customer.salesman_id != salesman.pk or not customer.active:
         raise OrderError("This customer is not on your list")

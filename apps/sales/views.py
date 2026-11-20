@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import Role
@@ -47,7 +48,8 @@ def order_new(request):
     for c in customers:
         prices[c.pk] = {s.pk: str(services.price_for(c, s)) for s in skus}
     return render(request, "sales/order_new.html", {"customers": customers, "skus": skus, "selected": selected,
-                                                    "client_uuid": uuid.uuid4(), "prices": prices})
+                                                    "client_uuid": uuid.uuid4(), "prices": prices,
+                                                    "offline_config": {"userId": request.user.pk, "submitUrl": reverse("order_api_submit")}})
 
 
 @roles_required(*ALL_VIEW)

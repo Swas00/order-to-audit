@@ -4,11 +4,13 @@ from django.urls import path
 
 from apps.accounts import views as account_views
 from apps.billing import views as bill
+from apps.core import views as core_views
 from apps.costing import views as cost
 from apps.inventory import views as inv
 from apps.production import views as prod
 from apps.purchasing import views as pur
 from apps.reports import views as rep
+from apps.sales import api as sales_api
 from apps.sales import views as sales
 
 urlpatterns = [
@@ -19,6 +21,9 @@ urlpatterns = [
     path("stock/", inv.stock_summary, name="stock_summary"),
     path("stock/ledger/", inv.stock_ledger, name="stock_ledger"),
     path("stock/adjust/", inv.adjust, name="stock_adjust"),
+    path("sw.js", core_views.service_worker, name="service_worker"),
+    path("manifest.webmanifest", core_views.manifest, name="manifest"),
+    path("orders/api/submit/", sales_api.submit_order, name="order_api_submit"),
     path("orders/", sales.order_list, name="order_list"),
     path("orders/new/", sales.order_new, name="order_new"),
     path("orders/<int:pk>/", sales.order_detail, name="order_detail"),
