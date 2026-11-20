@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load pretty %}
 {% block title %}{{ inv.number }}{% endblock %}
 {% block content %}
 <h1>{{ inv.number }} <small>({{ inv.get_status_display }}{% if inv.is_dispatched %}, dispatched{% endif %})</small></h1>
@@ -26,5 +27,5 @@
 {% if inv.is_dispatched %}<label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, do not add to stock</option></select>{% endif %}
 <button class="btn" type="submit">Cancel with credit note</button></form></div>
 {% endif %}
-<h2>History</h2><ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail }}</li>{% endfor %}</ul>
+<h2>History</h2><ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
 {% endblock %}

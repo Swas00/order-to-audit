@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load pretty %}
 {% block title %}{{ run.number }}{% endblock %}
 {% block content %}
 <h1>{{ run.number }}: {{ run.sku }} <small>({{ run.get_status_display }})</small></h1>
@@ -34,5 +35,5 @@
 <form method="post" action="{% url 'run_void' run.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required><button class="btn" type="submit">Void run</button></form></div>
 {% endif %}
 <h2>History</h2>
-<ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail }}</li>{% endfor %}</ul>
+<ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
 {% endblock %}

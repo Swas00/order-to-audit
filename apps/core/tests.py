@@ -37,3 +37,10 @@ def test_seed_commands_are_rerunnable(seeded):
     for cmd in ("seed_users", "seed_masters", "seed_inventory"):
         call_command(cmd)
     assert len(check_results(run_full_benchmark())) == 11
+
+
+def test_audit_detail_is_readable():
+    from apps.core.templatetags.pretty import pretty
+    assert pretty({"customer": "Retailer A", "lines": {"MUR200": 150}}) == "customer Retailer A; lines MUR200 150"
+    assert pretty({"changes": {"MUR200": {"qty": [120, 88]}}}) == "changes MUR200 qty 120 → 88"
+    assert pretty({"invoice": None}) == "invoice "
