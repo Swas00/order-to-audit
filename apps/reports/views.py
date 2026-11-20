@@ -38,6 +38,11 @@ REPORTS = {
 }
 
 
+def _plain(x):
+    """200.00 -> '200', 0.50 -> '0.5' (no exponent form)."""
+    return format(Decimal(x).normalize(), "f")
+
+
 @roles_required(*FLOOR)
 def hub(request):
     mine = [(slug, r[0], r[3]) for slug, r in REPORTS.items() if request.user.role in r[2]]
@@ -88,7 +93,7 @@ def dashboard(request):
         rep = prod.run_report(run)
         flagged = [f"{l.item.name} {l.variance.pct:+}%" for l in rep.lines if l.variance.status == var.FLAG and l.variance.pct is not None]
         if rep.yield_variance and rep.yield_variance.status == var.FLAG:
-            flagged.insert(0, f"Yield {rep.yield_variance.pct:+}% ({rep.yield_variance.actual:g} vs {rep.yield_variance.planned:g})")
+            flagged.insert(0, f"Yield {rep.yield_variance.pct:+}% ({_plain(rep.yield_variance.actual)} vs {_plain(rep.yield_variance.planned)})")
         if flagged:
             alerts.append((run, flagged))
     balances = sorted(((c, billing.customer_balance(c)) for c in Customer.objects.all()), key=lambda x: -x[1])

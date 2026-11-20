@@ -14,6 +14,7 @@ from apps.masters.units import convert
 from .models import ADJUSTMENT_TYPES, MovementType, StockAdjustment, StockMovement
 
 COST_PLACES = Decimal("0.0001")
+QTY_PLACES = Decimal("0.0001")
 ZERO = Decimal("0")
 
 
@@ -35,7 +36,7 @@ def balance(stockable, as_of=None) -> Decimal:
     qs = StockMovement.objects.filter(**_filter(stockable))
     if as_of is not None:
         qs = qs.filter(moved_at__lte=as_of)
-    return qs.aggregate(t=Sum("qty"))["t"] or ZERO
+    return Decimal(qs.aggregate(t=Sum("qty"))["t"] or 0).quantize(QTY_PLACES)
 
 
 def average_cost(stockable) -> Decimal:

@@ -28,6 +28,9 @@ def test_login_and_home_for_each_role(client):
     for user in User.objects.all():
         assert client.login(username=user.username, password=DEMO_PASSWORD)
         resp = client.get(reverse("home"))
+        if user.role == Role.OWNER:  # the owner lands on the dashboard
+            assert resp.status_code == 302 and resp["Location"] == reverse("dashboard")
+            resp = client.get(resp["Location"])
         assert resp.status_code == 200
         assert user.get_role_display().encode() in resp.content
         client.logout()

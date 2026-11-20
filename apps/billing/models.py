@@ -8,6 +8,11 @@ from django.utils import timezone
 ZERO = Decimal("0.00")
 
 
+def money_sum(value):
+    """Database SUM as an exact 2-place Decimal (SQLite may hand back an unscaled number)."""
+    return Decimal(value or 0).quantize(Decimal("0.01"))
+
+
 class DocKind(models.TextChoices):
     INVOICE = "INV", "Tax invoice"
     CREDIT_NOTE = "CN", "Credit note"
@@ -80,7 +85,7 @@ class Invoice(models.Model):
 
     @property
     def paid(self):
-        return self.allocations.aggregate(t=Sum("amount"))["t"] or ZERO
+        return money_sum(self.allocations.aggregate(t=Sum("amount"))["t"])
 
     @property
     def outstanding(self):
@@ -163,7 +168,7 @@ class Payment(models.Model):
 
     @property
     def unallocated(self):
-        return self.amount - (self.allocations.aggregate(t=Sum("amount"))["t"] or ZERO)
+        return self.amount - money_sum(self.allocations.aggregate(t=Sum("amount"))["t"])
 
     def __str__(self):
         return f"Payment #{self.pk} {self.customer} {self.amount}"

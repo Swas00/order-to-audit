@@ -325,3 +325,13 @@ def test_salesman_sees_invoiced_status_but_not_billing(client, seeded):
     client.login(username="salesman_a", password="demo12345")
     page = client.get(reverse("order_detail", args=[inv.order.pk])).content.decode()
     assert "Invoiced" in page and inv.number in page and reverse("invoice_detail", args=[inv.pk]) not in page
+
+
+def test_money_sums_do_not_drift(seeded):
+    """Payments in awkward paise amounts must add up exactly (no float residue), including on SQLite."""
+    inv = retailer_a_invoice()
+    for amt in ["0.10", "0.20", "33.33", "33.33", "33.34"]:
+        services.record_payment(cust("Retailer A"), amt, user("admin"), invoice=inv)
+    assert inv.paid == D("100.30") and str(inv.paid) == "100.30"
+    assert services.customer_balance(cust("Retailer A")) == D("7774.70") and str(services.customer_balance(cust("Retailer A"))) == "7774.70"
+    assert str(inv.outstanding) == "7774.70"

@@ -15,7 +15,7 @@ from apps.masters.models import CompanyProfile, Customer
 from apps.sales.models import Order, OrderStatus
 
 from . import tax
-from .models import (CreditNote, Dispatch, DocKind, DocSequence, Invoice, InvoiceLine, InvoiceStatus, Payment,
+from .models import (money_sum, CreditNote, Dispatch, DocKind, DocSequence, Invoice, InvoiceLine, InvoiceStatus, Payment,
                      PaymentAllocation)
 
 ZERO = Decimal("0.00")
@@ -158,8 +158,8 @@ def record_payment(customer: Customer, amount, user, invoice: Invoice | None = N
 
 def customer_balance(customer: Customer) -> Decimal:
     """Invoiced (not cancelled) minus everything received. Negative = customer is in credit."""
-    billed = customer.invoices.filter(status=InvoiceStatus.ISSUED).aggregate(t=Sum("grand_total"))["t"] or ZERO
-    received = customer.payments.aggregate(t=Sum("amount"))["t"] or ZERO
+    billed = money_sum(customer.invoices.filter(status=InvoiceStatus.ISSUED).aggregate(t=Sum("grand_total"))["t"])
+    received = money_sum(customer.payments.aggregate(t=Sum("amount"))["t"])
     return billed - received
 
 
