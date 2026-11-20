@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Adjust stock{% endblock %}
+{% block content %}
+<div class="card"><h1>Adjust stock</h1>
+<p>Corrections are recorded as their own document and appear in the ledger.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn" type="submit">Record adjustment</button></form></div>
+{% endblock %}

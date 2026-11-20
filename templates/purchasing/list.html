@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Purchases{% endblock %}
+{% block content %}
+<h1>Purchase register</h1>
+{% include "filters.html" %}
+{% if user.role == 'admin' or user.role == 'production' %}<p><a class="btn small" href="{% url 'purchase_new' %}">Record purchase</a></p>{% endif %}
+<div class="scroll"><table>
+  <tr><th>Date</th><th>Bill</th><th>Supplier</th><th>Lines</th><th>Taxable ₹</th><th>GST ₹</th></tr>
+  {% for p in purchases %}
+  <tr><td>{{ p.bill_date }}</td><td>{{ p.bill_no }}</td><td>{{ p.supplier }}</td>
+      <td>{% for l in p.lines.all %}{{ l.item.name }} {{ l.qty|floatformat:"-3" }} {{ l.unit }} @ ₹{{ l.rate|floatformat:2 }}<br>{% endfor %}</td>
+      <td>{{ p.taxable_total }}</td><td>{{ p.tax_total }}</td></tr>
+  {% empty %}<tr><td colspan="6">No purchases in this range.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}
