@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Costing{% endblock %}
+{% block content %}
+<h1>Cost per packet</h1>
+<p class="muted">Materials at weighted-average cost when issued (damaged pouches included). Overheads entered against a run are charged to it in full; monthly pools are shared by good packets produced.</p>
+{% include "filters.html" %}
+<h2>By product</h2>
+<div class="scroll"><table><tr><th>Product</th><th>Runs</th><th>Good packets</th><th>Total cost ₹</th><th>Cost / packet ₹</th><th>Price ₹</th><th>Margin ₹</th><th>Margin %</th></tr>
+{% for s in skus %}<tr><td>{{ s.sku }}</td><td>{{ s.runs }}</td><td>{{ s.good }}</td><td>{{ s.total|floatformat:2 }}</td><td><strong>{{ s.per_packet|floatformat:2 }}</strong></td><td>{{ s.price }}</td><td>{{ s.margin|floatformat:2 }}</td><td>{{ s.margin_pct }}%</td></tr>
+{% empty %}<tr><td colspan="8">No completed runs in this range.</td></tr>{% endfor %}</table></div>
+<h2>By run</h2>
+<div class="scroll"><table><tr><th>Run</th><th>Good</th><th>Materials</th><th>Labour</th><th>Gas/power</th><th>Other</th><th>Monthly share</th><th>Total ₹</th><th>Cost / packet ₹</th><th>Margin %</th></tr>
+{% for r in runs %}<tr><td><a href="{% url 'run_detail' r.run.pk %}">{{ r.run.number }}</a></td><td>{{ r.good }}</td><td>{{ r.material|floatformat:2 }}</td><td>{{ r.direct.labour|floatformat:2 }}</td><td>{{ r.direct.power_gas|floatformat:2 }}</td><td>{{ r.direct.other|floatformat:2 }}</td><td>{{ r.allocated|floatformat:2 }}</td><td>{{ r.total|floatformat:2 }}</td><td><strong>{{ r.per_packet|floatformat:2 }}</strong></td><td>{{ r.margin_pct }}%</td></tr>
+{% empty %}<tr><td colspan="10">No completed runs in this range.</td></tr>{% endfor %}</table></div>
+{% if can_write %}
+<div class="card" style="margin-top:12px"><h2>Add labour / gas / power / other</h2>
+{% if form.non_field_errors %}<p class="error">{{ form.non_field_errors }}</p>{% endif %}
+<form method="post" action="{% url 'overhead_add' %}">{% csrf_token %}{{ form.as_p }}<button class="btn" type="submit">Add cost</button></form></div>
+{% endif %}
+<h2>Overhead entries</h2>
+<div class="scroll"><table><tr><th>Date</th><th>Kind</th><th>₹</th><th>Charged to</th><th>Note</th><th></th></tr>
+{% for e in entries %}<tr><td>{{ e.incurred_on }}</td><td>{{ e.get_kind_display }}</td><td>{{ e.amount }}</td><td>{% if e.run %}{{ e.run.number }}{% else %}monthly pool{% endif %}</td><td>{{ e.description }}{% if e.voided %} <em>(voided: {{ e.void_reason }})</em>{% endif %}</td>
+<td>{% if can_write and not e.voided %}<form method="post" action="{% url 'overhead_void' e.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required style="width:8em"><button class="btn small" type="submit">Void</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6">No entries in this range.</td></tr>{% endfor %}</table></div>
+{% endblock %}

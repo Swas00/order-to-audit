@@ -4,6 +4,7 @@ from django.urls import path
 
 from apps.accounts import views as account_views
 from apps.billing import views as bill
+from apps.costing import views as cost
 from apps.inventory import views as inv
 from apps.production import views as prod
 from apps.purchasing import views as pur
@@ -34,6 +35,9 @@ urlpatterns = [
     path("payments/", bill.payment_list, name="payment_list"),
     path("payments/new/", bill.payment_new, name="payment_new"),
     path("receivables/", bill.receivables, name="receivables"),
+    path("costing/", cost.costing, name="costing"),
+    path("costing/add/", cost.overhead_add, name="overhead_add"),
+    path("costing/<int:pk>/void/", cost.overhead_void, name="overhead_void"),
     path("production/", prod.run_list, name="run_list"),
     path("production/start/", prod.run_start, name="run_start"),
     path("production/<int:pk>/", prod.run_detail, name="run_detail"),
