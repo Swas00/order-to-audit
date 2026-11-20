@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ run.number }}{% endblock %}
+{% block content %}
+<h1>{{ run.number }}: {{ run.sku }} <small>({{ run.get_status_display }})</small></h1>
+<p>{{ run.batches|floatformat:"-3" }} batch(es) · expected {{ run.expected_output|floatformat:"-2" }} packets · tolerance ±{{ report.tolerance|floatformat:"-2" }}% · by {{ run.created_by }}</p>
+<h2>Planned vs actual consumption</h2>
+<div class="scroll"><table>
+  <tr><th>Item</th><th>Planned</th><th>Actual</th><th>Variance</th><th></th></tr>
+  {% for l in report.lines %}
+  <tr><td>{{ l.item.name }} ({{ l.unit }})</td><td>{{ l.variance.planned|floatformat:"-3" }}</td><td>{{ l.variance.actual|floatformat:"-3" }}</td>
+      <td>{% if l.variance.pct is None %}n/a{% else %}{{ l.variance.pct|floatformat:2 }}%{% endif %}</td>
+      <td class="st-{{ l.variance.status }}">{% if l.variance.status == 'flag' %}FLAGGED{% elif l.variance.status == 'note' %}favourable, check{% else %}ok{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% if report.yield_variance %}
+<h2>Yield</h2>
+<p>Expected {{ report.yield_variance.planned|floatformat:"-2" }}, actual {{ report.yield_variance.actual }} good packets:
+ <strong>{{ report.yield_variance.pct|floatformat:2 }}%</strong>
+ <span class="st-{{ report.yield_variance.status }}">{% if report.yield_variance.status == 'flag' %}FLAGGED{% else %}{{ report.yield_variance.status }}{% endif %}</span>.
+ Shortfall {{ report.wastage_packets|floatformat:"-2" }} packets, of which {{ run.damaged_pouches }} pouches damaged.
+ Material cost ₹{{ report.material_cost|floatformat:2 }}.{% if run.remark %} Remark: {{ run.remark }}{% endif %}</p>
+{% endif %}
+{% if run.status == 'voided' %}<p class="error">Voided: {{ run.void_reason }}</p>{% endif %}
+
+{% if can_write and in_progress %}
+<div class="card"><h2>Issue raw material</h2>
+{% if issue_form.non_field_errors %}<p class="error">{{ issue_form.non_field_errors }}</p>{% endif %}
+<form method="post" action="{% url 'run_issue' run.pk %}">{% csrf_token %}{{ issue_form.as_p }}<button class="btn" type="submit">Issue</button></form></div>
+<div class="card" style="margin-top:12px"><h2>Complete run (actual output)</h2>
+<form method="post" action="{% url 'run_complete' run.pk %}">{% csrf_token %}{{ complete_form.as_p }}<button class="btn" type="submit">Complete run</button></form></div>
+{% endif %}
+{% if user.role == 'admin' and run.status != 'voided' %}
+<div class="card" style="margin-top:12px"><h2>Void run</h2><p>Reverses all stock movements of this run. Use to correct a mistake.</p>
+<form method="post" action="{% url 'run_void' run.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required><button class="btn" type="submit">Void run</button></form></div>
+{% endif %}
+<h2>History</h2>
+<ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail }}</li>{% endfor %}</ul>
+{% endblock %}

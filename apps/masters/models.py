@@ -86,6 +86,10 @@ class Sku(models.Model):
         max_digits=5, decimal_places=2, null=True, blank=True,
         help_text="Overrides the global tolerance (3%) for this SKU",
     )
+    pouch_item = models.ForeignKey(
+        "Item", null=True, blank=True, on_delete=models.PROTECT, related_name="+",
+        help_text="Primary pack (pouch): one used per good packet, plus damaged ones recorded as wastage",
+    )
     active = models.BooleanField(default=True)
 
     class Meta:

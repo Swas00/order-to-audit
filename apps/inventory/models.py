@@ -36,10 +36,11 @@ class MovementType(models.TextChoices):
     DISPATCH = "dispatch", "Dispatch (sale)"
     RETURN = "return", "Sales return"
     ADJUSTMENT = "adjustment", "Adjustment"
+    REVERSAL = "reversal", "Reversal of a voided document"
 
 
 # Used by the stock summary: opening + receipts - issues +/- adjustments = closing.
-ADJUSTMENT_TYPES = {MovementType.ADJUSTMENT, MovementType.OPENING}
+ADJUSTMENT_TYPES = {MovementType.ADJUSTMENT, MovementType.OPENING, MovementType.REVERSAL}
 
 
 class StockMovement(models.Model):

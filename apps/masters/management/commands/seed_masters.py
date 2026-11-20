@@ -40,7 +40,7 @@ def seed_masters():
              for c, n, k, u, r in ITEMS}
     sku, _ = Sku.objects.update_or_create(code="MUR200", defaults=dict(
         product_name="Murukku", pack_size="200 g", hsn_code="19059030", gst_rate=D("5"),
-        selling_price=D("50"), packets_per_carton=20))
+        selling_price=D("50"), packets_per_carton=20, pouch_item=items["POUCH200"]))
     bom, _ = Bom.objects.get_or_create(sku=sku, version=1, defaults=dict(batch_yield=200, is_active=True))
     for code, qty, unit in BOM_LINES:
         BomLine.objects.update_or_create(bom=bom, item=items[code], defaults=dict(qty_per_batch=D(qty), unit=units[unit]))

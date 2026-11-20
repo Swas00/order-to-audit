@@ -174,3 +174,24 @@ def ledger(stockable, date_from=None, date_to=None):
         running += m.qty
         out.append((m, running))
     return brought_forward, out
+
+
+@transaction.atomic
+def reverse_source(source, note, moved_at=None):
+    """Void a document's stock effect: post an opposite movement for each of its movements.
+
+    Original movements stay in the ledger; the reversal rows cancel them. A reversal that would
+    take stock below zero (e.g. finished goods already sold) is refused and nothing is posted.
+    """
+    ct = ContentType.objects.get_for_model(source)
+    originals = list(StockMovement.objects.filter(source_type=ct, source_id=source.pk)
+                     .exclude(movement_type=MovementType.REVERSAL).select_related("item", "sku"))
+    if StockMovement.objects.filter(source_type=ct, source_id=source.pk, movement_type=MovementType.REVERSAL).exists():
+        raise StockError("This document has already been reversed")
+    for m in originals:
+        stockable = m.stockable
+        _lock(stockable)
+        if m.qty > 0 and balance(stockable) < m.qty:
+            raise InsufficientStock(stockable, balance(stockable), m.qty)
+        _post(stockable, MovementType.REVERSAL, -m.qty, m.unit_cost, source, moved_at, note)
+    return len(originals)
