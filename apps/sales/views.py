@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import Role
 from apps.accounts.permissions import roles_required
 from apps.audit.models import history
+from apps.core.dates import to_pk
 from apps.masters.models import Customer, Sku
 
 from . import services
@@ -23,7 +24,7 @@ def order_new(request):
     skus = list(Sku.objects.filter(active=True))
     selected = None
     if request.method == "POST":
-        selected = customers.filter(pk=request.POST.get("customer") or 0).first()
+        selected = customers.filter(pk=to_pk(request.POST.get("customer"))).first()
         try:
             quantities = {s: int(request.POST.get(f"qty_{s.pk}") or 0) for s in skus}
         except ValueError:
@@ -77,7 +78,7 @@ def _edits(request, order):
         try:
             edits[line.pk] = (int(request.POST.get(f"qty_{line.pk}", line.qty)),
                               Decimal(request.POST.get(f"price_{line.pk}", line.price)))
-        except (ValueError, InvalidOperation):
+        except (ValueError, InvalidOperation, OverflowError):
             raise services.OrderError("Quantities must be whole numbers and prices valid amounts")
     return edits
 

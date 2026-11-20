@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 
 from apps.accounts.models import Role
 from apps.accounts.permissions import roles_required
-from apps.core.dates import date_range
+from apps.core.dates import date_range, to_pk
 from apps.core.exports import export_response
 from apps.masters.models import Item, ItemKind, Sku
 
@@ -40,9 +40,9 @@ def stock_ledger(request):
     choice = request.GET.get("stock", "")
     stockable = None
     if choice.startswith("item:"):
-        stockable = Item.objects.filter(pk=choice[5:] or 0).first()
+        stockable = Item.objects.filter(pk=to_pk(choice[5:])).first()
     elif choice.startswith("sku:"):
-        stockable = Sku.objects.filter(pk=choice[4:] or 0).first()
+        stockable = Sku.objects.filter(pk=to_pk(choice[4:])).first()
     brought_forward, entries = services.ledger(stockable, dt_from, dt_to) if stockable else (0, [])
     if stockable and request.GET.get("export") in ("csv", "xlsx"):
         rows = [(d_from, "Brought forward", "", "", "", brought_forward)] + [(m.moved_at.strftime("%Y-%m-%d %H:%M"), m.get_movement_type_display(), str(m.source), m.qty, m.unit_cost, bal)

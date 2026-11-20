@@ -18,6 +18,10 @@ class OrderError(Exception):
     pass
 
 
+MAX_QTY = 1_000_000  # packets on one line; guards against typos and overflow
+MAX_PRICE = Decimal("1000000")
+
+
 def price_for(customer: Customer, sku: Sku) -> Decimal:
     """Customer-specific price if one is set, otherwise the SKU list price."""
     special = CustomerPrice.objects.filter(customer=customer, sku=sku).first()
@@ -39,6 +43,8 @@ def create_order(salesman, customer: Customer, quantities: dict, client_uuid=Non
     wanted = {sku: int(q) for sku, q in quantities.items() if q and int(q) > 0}
     if not wanted:
         raise OrderError("Add at least one product")
+    if any(q > MAX_QTY for q in wanted.values()):
+        raise OrderError(f"Quantity per product cannot exceed {MAX_QTY:,} packets")
     if any(not sku.active for sku in wanted):
         raise OrderError("An inactive product cannot be ordered")
     order = Order.objects.create(customer=customer, salesman=salesman, client_uuid=client_uuid, note=note,
@@ -105,8 +111,10 @@ def approve_order(order: Order, user, edits: dict | None = None, cap_to_availabl
     for line_id, (qty, price) in (edits or {}).items():
         line = lines[line_id]
         qty, price = int(qty), Decimal(price)
-        if qty < 0 or price < 0:
+        if not price.is_finite() or qty < 0 or price < 0:
             raise OrderError("Quantity and price cannot be negative")
+        if qty > MAX_QTY or price > MAX_PRICE:
+            raise OrderError("Quantity or price is unrealistically large")
         if (qty, price) != (line.qty, line.price):
             changes[line.sku.code] = {"qty": [line.qty, qty], "price": [str(line.price), str(price)]}
             line.qty, line.price = qty, price

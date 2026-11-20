@@ -26,3 +26,12 @@ def aware_range(d_from, d_to):
     """Whole-day aware datetimes for a (date, date) pair."""
     tz = timezone.get_current_timezone()
     return (timezone.make_aware(datetime.combine(d_from, time.min), tz), timezone.make_aware(datetime.combine(d_to, time.max), tz))
+
+
+def to_pk(value):
+    """Parse a user-supplied id. Returns an int in a safe range, or None for anything else."""
+    try:
+        n = int(str(value).strip())
+    except (ValueError, TypeError):
+        return None
+    return n if 0 < n < 2**62 else None

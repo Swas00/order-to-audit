@@ -46,13 +46,14 @@ def average_cost(stockable) -> Decimal:
     opening balances count as receipts. Replay keeps the ledger the single source of truth.
     """
     qty, value = ZERO, ZERO
-    for m in StockMovement.objects.filter(**_filter(stockable)).order_by("moved_at", "id"):
-        if m.qty > 0:
-            value += m.qty * m.unit_cost
-            qty += m.qty
+    rows = StockMovement.objects.filter(**_filter(stockable)).order_by("moved_at", "id").values_list("qty", "unit_cost")
+    for mqty, cost in rows.iterator(chunk_size=5000):  # plain tuples: far cheaper than model instances
+        if mqty > 0:
+            value += mqty * cost
+            qty += mqty
         else:
             avg = (value / qty) if qty > 0 else ZERO
-            qty += m.qty
+            qty += mqty
             value = qty * avg if qty > 0 else ZERO
     return (value / qty).quantize(COST_PLACES, ROUND_HALF_UP) if qty > 0 else _fallback_cost(stockable)
 

@@ -36,27 +36,11 @@ def seeded():
     seed_inventory()
 
 
+from apps.core.benchmark import run_full_benchmark as _bench  # noqa: E402
+
+
 def run_full_benchmark():
-    """Section 5, steps 1-8 in order. Returns a dict of the objects created."""
-    from apps.purchasing.models import Purchase, Supplier, post_purchase
-    prodn, admin = user("production"), user("admin")
-    post_purchase(Purchase(supplier=Supplier.objects.get(), bill_no="BM-1"),                       # 1 purchase
-                  [dict(item=item("FLOUR"), qty=D("60"), unit=Unit.objects.get(code="kg"), rate=D("45"))], prodn)
-    run = prod.start_run(FG(), 1, prodn)                                                           # 2 run + issues
-    for code, qty in (("FLOUR", "40"), ("OIL", "10.5"), ("SPICE", "1.2")):
-        prod.issue_material(run, item(code), D(qty), prodn)
-    prod.complete_run(run, 188, 6, {item("CARTON20"): D("9")}, prodn)                              # 3 output
-    order_a = sales.create_order(user("salesman_a"), cust("Retailer A"), {FG(): 150}, client_uuid=uuid.uuid4())  # 4
-    sales.approve_order(order_a, admin)                                                            # 5
-    inv_a = billing.raise_invoice(order_a, admin)
-    billing.dispatch_invoice(inv_a, admin)
-    order_b = sales.create_order(user("salesman_b"), cust("Distributor B"), {FG(): 120}, client_uuid=uuid.uuid4())  # 6
-    cov_b = sales.coverage(order_b)
-    billing.record_payment(cust("Retailer A"), "4000", admin, invoice=inv_a, mode="upi", reference="UTR-1")  # 7
-    costing.add_overhead(prodn, "labour", "1200", run=run)                                         # 8 overheads
-    costing.add_overhead(prodn, "power_gas", "600", run=run)
-    run.refresh_from_db()
-    return dict(run=run, order_a=order_a, inv_a=inv_a, order_b=order_b, cov_b=cov_b)
+    return _bench()
 
 
 def table(tables, title_part):
@@ -141,7 +125,7 @@ def test_collections_and_outstanding(seeded):
     run_full_benchmark()
     t = builders.collections(today().replace(day=1), today())
     assert t[0].rows == [("Retailer A", 1, D("4000.00"))]
-    assert t[1].rows[0][2:5] == (D("4000.00"), "UPI", "UTR-1")
+    assert t[1].rows[0][2:5] == (D("4000.00"), "UPI", "BENCH-UTR")
     o = builders.outstanding(today().replace(day=1), today())
     assert o[0].rows == [("Retailer A", D("3875.00"))]
     assert o[1].rows[0][1:] == (D("3875.00"), D("0.00"), D("0.00"), D("0.00"), D("3875.00"))

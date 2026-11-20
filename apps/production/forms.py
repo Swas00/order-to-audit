@@ -5,7 +5,7 @@ from apps.masters.models import Item, ItemKind, Sku, Unit
 
 class StartRunForm(forms.Form):
     sku = forms.ModelChoiceField(Sku.objects.filter(active=True), label="Product")
-    batches = forms.DecimalField(min_value=0.001, max_digits=8, decimal_places=3, initial=1,
+    batches = forms.DecimalField(min_value=0.001, max_value=1000, max_digits=8, decimal_places=3, initial=1,
                                  label="Batches (1 = standard batch)")
 
 
@@ -22,8 +22,8 @@ class IssueForm(forms.Form):
 
 
 class CompleteForm(forms.Form):
-    good_packets = forms.IntegerField(min_value=0, label="Good packets produced")
-    damaged_pouches = forms.IntegerField(min_value=0, initial=0, label="Damaged pouches")
+    good_packets = forms.IntegerField(min_value=0, max_value=1_000_000, label="Good packets produced")
+    damaged_pouches = forms.IntegerField(min_value=0, max_value=1_000_000, initial=0, label="Damaged pouches")
     remark = forms.CharField(max_length=250, required=False, label="Remark (cause of wastage, etc.)")
 
     def __init__(self, run, *args, **kwargs):
