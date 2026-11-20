@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Order-to-Audit{% endblock %}</title>
+  <style>
+    :root { --fg:#1f2933; --bg:#f5f7fa; --card:#fff; --accent:#b45309; --line:#d9e2ec; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, sans-serif; color:var(--fg); background:var(--bg); }
+    header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--accent); color:#fff; }
+    header a, header button { color:#fff; background:none; border:0; font:inherit; cursor:pointer; text-decoration:underline; }
+    main { max-width:720px; margin:0 auto; padding:16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
+    label { display:block; margin:12px 0 4px; font-weight:600; }
+    input { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:6px; }
+    .btn { margin-top:16px; width:100%; padding:12px; font-size:16px; background:var(--accent); color:#fff; border:0; border-radius:6px; cursor:pointer; }
+    .error { color:#b91c1c; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Order-to-Audit</strong>
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+      {{ user.get_full_name|default:user.username }} ({{ user.get_role_display }}) <button type="submit">Log out</button>
+    </form>
+    {% endif %}
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

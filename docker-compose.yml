@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: oas
+      POSTGRES_USER: oas
+      POSTGRES_PASSWORD: oas
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oas"]
+      interval: 3s
+      retries: 20
+  web:
+    build: .
+    environment:
+      DATABASE_URL: postgres://oas:oas@db:5432/oas
+      DEBUG: "0"
+      ALLOWED_HOSTS: "*"
+      SECRET_KEY: "demo-only-not-secret"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  pgdata:
