@@ -1,13 +1,14 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Role(models.TextChoices):
-    SALESMAN = "salesman", "Salesman"
-    ADMIN = "admin", "Factory admin"
-    PRODUCTION = "production", "Production supervisor"
-    ACCOUNTANT = "accountant", "Accountant / auditor (read-only)"
-    OWNER = "owner", "Owner"
+    SALESMAN = "salesman", _("Salesman")
+    ADMIN = "admin", _("Factory admin")
+    PRODUCTION = "production", _("Production supervisor")
+    ACCOUNTANT = "accountant", _("Accountant / auditor (read-only)")
+    OWNER = "owner", _("Owner")
 
 
 class User(AbstractUser):

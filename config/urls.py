@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import include, path
 
 from apps.accounts import views as account_views
 from apps.billing import views as bill
@@ -15,6 +15,7 @@ from apps.sales import views as sales
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("i18n/", include("django.conf.urls.i18n")),  # POST /i18n/setlang/ switches language (cookie)
     path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("", account_views.home, name="home"),

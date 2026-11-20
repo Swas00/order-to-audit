@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Record purchase{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Record purchase" %}{% endblock %}
 {% block content %}
-<div class="card"><h1>Record purchase</h1>
+<div class="card"><h1>{% trans "Record purchase" %}</h1>
 <form method="post">{% csrf_token %}
   {{ form.as_p }}
   {{ formset.management_form }}
-  {% for f in formset %}<fieldset><legend>Line {{ forloop.counter }}</legend>{{ f.as_p }}</fieldset>{% endfor %}
-  <button class="btn" type="submit">Save purchase</button>
+  {% for f in formset %}<fieldset><legend>{% blocktrans with n=forloop.counter %}Line {{ n }}{% endblocktrans %}</legend>{{ f.as_p }}</fieldset>{% endfor %}
+  <button class="btn" type="submit">{% trans "Save purchase" %}</button>
 </form></div>
 {% endblock %}

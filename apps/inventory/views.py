@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext as _
 
 from apps.accounts.models import Role
 from apps.accounts.permissions import roles_required
@@ -65,6 +66,6 @@ def adjust(request):
         except services.StockError as e:
             form.add_error(None, str(e))
         else:
-            messages.success(request, "Adjustment recorded")
+            messages.success(request, _("Adjustment recorded"))
             return redirect("stock_summary")
     return render(request, "inventory/adjust.html", {"form": form})

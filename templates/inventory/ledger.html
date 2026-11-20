@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Stock ledger{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Stock ledger" %}{% endblock %}
 {% block content %}
-<h1>Stock ledger</h1>
+<h1>{% trans "Stock ledger" %}</h1>
 {% include "filters.html" %}
 {% if stockable %}
 <h2>{{ stockable }}</h2>
 <div class="scroll"><table>
-  <tr><th>Date</th><th>Type</th><th>Source document</th><th>Batch</th><th>Qty</th><th>Unit cost ₹</th><th>Balance</th></tr>
-  <tr><td>{{ d_from }}</td><td colspan="5"><em>Brought forward</em></td><td>{{ brought_forward|floatformat:"-3" }}</td></tr>
+  <tr><th>{% trans "Date" %}</th><th>{% trans "Type" %}</th><th>{% trans "Source document" %}</th><th>{% trans "Batch" %}</th><th>{% trans "Qty" %}</th><th>{% trans "Unit cost ₹" %}</th><th>{% trans "Balance" %}</th></tr>
+  <tr><td>{{ d_from }}</td><td colspan="5"><em>{% trans "Brought forward" %}</em></td><td>{{ brought_forward|floatformat:"-3" }}</td></tr>
   {% for m, bal in entries %}
   <tr><td>{{ m.moved_at|date:"d M Y H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.source }}</td><td>{{ m.batch.number|default:"" }}</td><td>{{ m.qty|floatformat:"-3" }}</td><td>{{ m.unit_cost|floatformat:2 }}</td><td>{{ bal|floatformat:"-3" }}</td></tr>
-  {% empty %}<tr><td colspan="6">No movements in this range.</td></tr>{% endfor %}
+  {% empty %}<tr><td colspan="6">{% trans "No movements in this range." %}</td></tr>{% endfor %}
 </table></div>
-{% else %}<p>Choose an item and press Apply.</p>{% endif %}
+{% else %}<p>{% trans "Choose an item and press Apply." %}</p>{% endif %}
 {% endblock %}

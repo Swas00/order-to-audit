@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext as _
 
 from apps.accounts.models import Role
 from apps.accounts.permissions import roles_required
@@ -29,9 +30,9 @@ def purchase_new(request):
     if request.method == "POST" and form.is_valid() and formset.is_valid():
         lines = [f.cleaned_data for f in formset.forms if f.cleaned_data and f.cleaned_data.get("item")]
         if not lines:
-            form.add_error(None, "Add at least one line.")
+            form.add_error(None, _("Add at least one line."))
         else:
             post_purchase(form.save(commit=False), lines, request.user)
-            messages.success(request, "Purchase recorded and stock updated")
+            messages.success(request, _("Purchase recorded and stock updated"))
             return redirect("purchase_list")
     return render(request, "purchasing/new.html", {"form": form, "formset": formset})

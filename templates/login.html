@@ -1,15 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Log in{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Log in" %}{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Log in</h1>
+  <h1>{% trans "Log in" %}</h1>
   <form method="post">{% csrf_token %}
-    {% if form.errors %}<p class="error">Wrong username or password.</p>{% endif %}
-    <label for="id_username">Username</label>
+    {% if form.errors %}<p class="error">{% trans "Wrong username or password." %}</p>{% endif %}
+    <label for="id_username">{% trans "Username" %}</label>
     <input id="id_username" name="username" autocomplete="username" autocapitalize="none" required>
-    <label for="id_password">Password</label>
+    <label for="id_password">{% trans "Password" %}</label>
     <input id="id_password" name="password" type="password" autocomplete="current-password" required>
-    <button class="btn" type="submit">Log in</button>
+    <button class="btn" type="submit">{% trans "Log in" %}</button>
   </form>
 </div>
 {% endblock %}

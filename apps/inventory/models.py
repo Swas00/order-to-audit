@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class ImmutableError(Exception):
@@ -27,16 +28,16 @@ class MovementQuerySet(models.QuerySet):
 
 
 class MovementType(models.TextChoices):
-    OPENING = "opening", "Opening balance"
-    PURCHASE = "purchase", "Purchase receipt"
-    PRODUCTION_ISSUE = "production_issue", "Issue to production"
-    PRODUCTION_PACKAGING = "production_packaging", "Packaging used"
-    PRODUCTION_WASTAGE = "production_wastage", "Damaged / wasted"
-    PRODUCTION_OUTPUT = "production_output", "Finished goods produced"
-    DISPATCH = "dispatch", "Dispatch (sale)"
-    RETURN = "return", "Sales return"
-    ADJUSTMENT = "adjustment", "Adjustment"
-    REVERSAL = "reversal", "Reversal of a voided document"
+    OPENING = "opening", _("Opening balance")
+    PURCHASE = "purchase", _("Purchase receipt")
+    PRODUCTION_ISSUE = "production_issue", _("Issue to production")
+    PRODUCTION_PACKAGING = "production_packaging", _("Packaging used")
+    PRODUCTION_WASTAGE = "production_wastage", _("Damaged / wasted")
+    PRODUCTION_OUTPUT = "production_output", _("Finished goods produced")
+    DISPATCH = "dispatch", _("Dispatch (sale)")
+    RETURN = "return", _("Sales return")
+    ADJUSTMENT = "adjustment", _("Adjustment")
+    REVERSAL = "reversal", _("Reversal of a voided document")
 
 
 # Used by the stock summary: opening + receipts - issues +/- adjustments = closing.

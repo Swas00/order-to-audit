@@ -1,36 +1,37 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block content %}
 <div class="card">
-  <h1>Welcome, {{ user.get_full_name|default:user.username }}</h1>
-  <p>Role: <strong>{{ user.get_role_display }}</strong></p>
+  <h1>{% blocktrans with name=user.get_full_name|default:user.username %}Welcome, {{ name }}{% endblocktrans %}</h1>
+  <p>{% trans "Role" %}: <strong>{{ user.get_role_display }}</strong></p>
   <p>{{ coming }}</p>
 </div>
 {% if user.role == 'salesman' %}
-<div class="card" style="margin-top:12px"><h2>Orders</h2><ul>
-  <li><a class="btn small" href="{% url 'order_new' %}">New order</a></li>
-  <li><a href="{% url 'order_list' %}">My orders and status</a></li>
-  <li><a href="{% url 'visit_new' %}">Check in at a customer</a> · <a href="{% url 'visit_list' %}">My visits</a></li>
-  <li><a href="{% url 'customer_sales' %}">My customer-wise sales</a></li>
+<div class="card" style="margin-top:12px"><h2>{% trans "Orders" %}</h2><ul>
+  <li><a class="btn small" href="{% url 'order_new' %}">{% trans "New order" %}</a></li>
+  <li><a href="{% url 'order_list' %}">{% trans "My orders and status" %}</a></li>
+  <li><a href="{% url 'visit_new' %}">{% trans "Check in at a customer" %}</a> · <a href="{% url 'visit_list' %}">{% trans "My visits" %}</a></li>
+  <li><a href="{% url 'customer_sales' %}">{% trans "My customer-wise sales" %}</a></li>
 </ul></div>{% else %}
-<div class="card" style="margin-top:12px"><h2>Orders</h2><ul>
-  <li><a href="{% url 'order_list' %}">All orders</a></li>
-  <li><a href="{% url 'customer_sales' %}">Customer-wise sales</a></li>
-  {% if user.role == 'admin' or user.role == 'owner' %}<li><a href="{% url 'visit_list' %}">Salesman visits</a></li>{% endif %}
+<div class="card" style="margin-top:12px"><h2>{% trans "Orders" %}</h2><ul>
+  <li><a href="{% url 'order_list' %}">{% trans "All orders" %}</a></li>
+  <li><a href="{% url 'customer_sales' %}">{% trans "Customer-wise sales" %}</a></li>
+  {% if user.role == 'admin' or user.role == 'owner' %}<li><a href="{% url 'visit_list' %}">{% trans "Salesman visits" %}</a></li>{% endif %}
 </ul></div>{% endif %}
 {% if user.role != 'salesman' %}
-<div class="card" style="margin-top:12px"><h2>Quick links</h2><ul>
-  {% if user.role == 'admin' %}<li><a href="{% url 'dashboard' %}">Dashboard</a></li>{% endif %}
-  <li><a href="{% url 'reports' %}">Reports</a></li>
-  <li><a href="{% url 'stock_summary' %}">Stock summary</a></li>
-  <li><a href="{% url 'stock_ledger' %}">Stock ledger</a></li>
-  <li><a href="{% url 'purchase_list' %}">Purchases</a></li>
-  <li><a href="{% url 'run_list' %}">Production runs</a></li>
-  <li><a href="{% url 'run_plan' %}">Production plan</a></li>
-  <li><a href="{% url 'costing' %}">Cost per packet</a></li>
+<div class="card" style="margin-top:12px"><h2>{% trans "Quick links" %}</h2><ul>
+  {% if user.role == 'admin' %}<li><a href="{% url 'dashboard' %}">{% trans "Dashboard" %}</a></li>{% endif %}
+  <li><a href="{% url 'reports' %}">{% trans "Reports" %}</a></li>
+  <li><a href="{% url 'stock_summary' %}">{% trans "Stock summary" %}</a></li>
+  <li><a href="{% url 'stock_ledger' %}">{% trans "Stock ledger" %}</a></li>
+  <li><a href="{% url 'purchase_list' %}">{% trans "Purchases" %}</a></li>
+  <li><a href="{% url 'run_list' %}">{% trans "Production runs" %}</a></li>
+  <li><a href="{% url 'run_plan' %}">{% trans "Production plan" %}</a></li>
+  <li><a href="{% url 'costing' %}">{% trans "Cost per packet" %}</a></li>
   {% if user.role != 'production' %}
-  <li><a href="{% url 'invoice_list' %}">Invoices</a></li>
-  <li><a href="{% url 'payment_list' %}">Payments</a></li>
-  <li><a href="{% url 'receivables' %}">Outstanding and ageing</a></li>
+  <li><a href="{% url 'invoice_list' %}">{% trans "Invoices" %}</a></li>
+  <li><a href="{% url 'payment_list' %}">{% trans "Payments" %}</a></li>
+  <li><a href="{% url 'receivables' %}">{% trans "Outstanding and ageing" %}</a></li>
   {% endif %}
 </ul></div>{% endif %}
 {% endblock %}

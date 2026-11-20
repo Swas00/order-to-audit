@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.accounts.models import Role
@@ -36,7 +37,7 @@ def run_start(request):
         except services.ProductionError as e:
             _fail(request, e)
     else:
-        messages.error(request, "Check the product and batch size.")
+        messages.error(request, _("Check the product and batch size."))
     return redirect("run_list")
 
 
@@ -58,7 +59,7 @@ def run_issue(request, pk):
         d = form.cleaned_data
         try:
             services.issue_material(run, d["item"], d["qty"], request.user, unit=d["unit"])
-            messages.success(request, f"Issued {d['qty']} {d['unit']} of {d['item'].name}")
+            messages.success(request, _("Issued %(qty)s %(unit)s of %(item)s") % {"qty": d["qty"], "unit": d["unit"], "item": d["item"].name})
             return redirect("run_detail", pk=pk)
         except (StockError, services.ProductionError) as e:
             _fail(request, e)
@@ -74,7 +75,7 @@ def run_complete(request, pk):
         d = form.cleaned_data
         try:
             services.complete_run(run, d["good_packets"], d["damaged_pouches"], form.packaging_used(), request.user, d["remark"])
-            messages.success(request, "Run completed. Stock updated.")
+            messages.success(request, _("Run completed. Stock updated."))
             return redirect("run_detail", pk=pk)
         except (StockError, services.ProductionError) as e:
             _fail(request, e)
@@ -87,7 +88,7 @@ def run_void(request, pk):
     run = get_object_or_404(ProductionRun, pk=pk)
     try:
         services.void_run(run, request.POST.get("reason", ""), request.user)
-        messages.success(request, "Run voided and its stock movements reversed.")
+        messages.success(request, _("Run voided and its stock movements reversed."))
     except (StockError, services.ProductionError) as e:
         _fail(request, e)
     return redirect("run_detail", pk=pk)

@@ -1,21 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Production plan{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Production plan" %}{% endblock %}
 {% block content %}
-<h1>Production plan from pending orders</h1>
-<p class="muted">Demand = orders waiting for approval{% if not include %} (excluded){% endif %} + approved or invoiced orders not yet dispatched. Net need = demand minus finished goods in stock; batches are rounded up to whole standard batches.</p>
-<p><a class="btn small" href="?submitted={% if include %}0{% else %}1{% endif %}">{% if include %}Only count approved orders{% else %}Include orders waiting for approval{% endif %}</a></p>
+<h1>{% trans "Production plan from pending orders" %}</h1>
+<p class="muted">{% trans "Demand = orders waiting for approval" %}{% if not include %} {% trans "(excluded)" %}{% endif %} {% trans "+ approved or invoiced orders not yet dispatched. Net need = demand minus finished goods in stock; batches are rounded up to whole standard batches." %}</p>
+<p><a class="btn small" href="?submitted={% if include %}0{% else %}1{% endif %}">{% if include %}{% trans "Only count approved orders" %}{% else %}{% trans "Include orders waiting for approval" %}{% endif %}</a></p>
 {% for r in rows %}
 <div class="card" style="margin-bottom:12px">
   <h2>{{ r.sku }}</h2>
-  <p>In stock <strong>{{ r.in_stock|floatformat:"-3" }}</strong> · waiting approval {{ r.submitted }} · approved, not dispatched {{ r.committed }} · net need <strong>{{ r.net_need|floatformat:"-3" }}</strong></p>
+  <p>{% trans "In stock" %} <strong>{{ r.in_stock|floatformat:"-3" }}</strong> · {% trans "waiting approval" %} {{ r.submitted }} · {% trans "approved, not dispatched" %} {{ r.committed }} · {% trans "net need" %} <strong>{{ r.net_need|floatformat:"-3" }}</strong></p>
   {% if r.batches %}
-  <p class="big">Make {{ r.batches }} batch{{ r.batches|pluralize:"es" }}</p>
-  <p>{{ r.batches }} × {{ r.batch_yield }} = {{ r.output }} packets expected.
-     {% if r.can_make %}<span class="st-ok">Materials in stock cover it.</span>{% else %}<span class="st-flag">Short of materials: buy before starting.</span>{% endif %}</p>
-  <div class="scroll"><table><tr><th>Material</th><th>Needed</th><th>On hand</th><th>Short</th></tr>
+  <p class="big">{% blocktrans count counter=r.batches %}Make {{ counter }} batch{% plural %}Make {{ counter }} batches{% endblocktrans %}</p>
+  <p>{% blocktrans with b=r.batches y=r.batch_yield o=r.output %}{{ b }} × {{ y }} = {{ o }} packets expected.{% endblocktrans %}
+     {% if r.can_make %}<span class="st-ok">{% trans "Materials in stock cover it." %}</span>{% else %}<span class="st-flag">{% trans "Short of materials: buy before starting." %}</span>{% endif %}</p>
+  <div class="scroll"><table><tr><th>{% trans "Material" %}</th><th>{% trans "Needed" %}</th><th>{% trans "On hand" %}</th><th>{% trans "Short" %}</th></tr>
   {% for m in r.materials %}<tr class="{% if m.short %}short{% endif %}"><td>{{ m.item_name }} ({{ m.unit }})</td><td>{{ m.needed|floatformat:"-3" }}</td><td>{{ m.on_hand|floatformat:"-3" }}</td><td>{% if m.short %}<span class="st-flag">{{ m.short|floatformat:"-3" }}</span>{% else %}-{% endif %}</td></tr>{% endfor %}</table></div>
-  {% if can_write %}<form method="post" action="{% url 'run_start' %}">{% csrf_token %}<input type="hidden" name="sku" value="{{ r.sku.pk }}"><input type="hidden" name="batches" value="{{ r.batches }}"><button class="btn" type="submit">Start run of {{ r.batches }} batch{{ r.batches|pluralize:"es" }}</button></form>{% endif %}
-  {% else %}<p class="st-ok">Stock covers all pending orders. Nothing to make.</p>{% endif %}
+  {% if can_write %}<form method="post" action="{% url 'run_start' %}">{% csrf_token %}<input type="hidden" name="sku" value="{{ r.sku.pk }}"><input type="hidden" name="batches" value="{{ r.batches }}"><button class="btn" type="submit">{% blocktrans count counter=r.batches %}Start run of {{ counter }} batch{% plural %}Start run of {{ counter }} batches{% endblocktrans %}</button></form>{% endif %}
+  {% else %}<p class="st-ok">{% trans "Stock covers all pending orders. Nothing to make." %}</p>{% endif %}
 </div>
-{% empty %}<p>No products with an active BOM.</p>{% endfor %}
+{% empty %}<p>{% trans "No products with an active BOM." %}</p>{% endfor %}
 {% endblock %}

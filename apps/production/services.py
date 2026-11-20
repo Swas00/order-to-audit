@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.audit.models import record
 from apps.inventory import services as stock
@@ -38,10 +39,10 @@ def tolerance_for(sku: Sku) -> Decimal:
 def start_run(sku: Sku, batches, user, started_at=None) -> ProductionRun:
     batches = Decimal(batches)
     if batches <= 0:
-        raise ProductionError("Batch size must be positive")
+        raise ProductionError(_("Batch size must be positive"))
     bom = sku.boms.filter(is_active=True).first()
     if bom is None:
-        raise ProductionError(f"{sku} has no active BOM")
+        raise ProductionError(_("%(sku)s has no active BOM") % {"sku": sku})
     run = ProductionRun.objects.create(sku=sku, bom=bom, batches=batches, expected_output=planned_output(bom, batches),
                                        created_by=user, started_at=started_at or timezone.now())
     for p in planned_consumption(bom, batches):
@@ -60,9 +61,9 @@ def issue_material(run, item: Item, qty, user, unit=None) -> StockMovement:
     """Stage 1: issue raw material to the run (consumption is recorded now)."""
     run = _locked(run)
     if run.status != RunStatus.IN_PROGRESS:
-        raise ProductionError("Materials can only be issued to a run that is in progress")
+        raise ProductionError(_("Materials can only be issued to a run that is in progress"))
     if item.kind != ItemKind.RAW:
-        raise ProductionError("Only raw materials are issued here; packaging is recorded on completion")
+        raise ProductionError(_("Only raw materials are issued here; packaging is recorded on completion"))
     m = stock.issue(item, qty, run, MovementType.PRODUCTION_ISSUE, unit=unit, note=run.number)
     _add_actual(run, item, -m.qty)
     record(user, run, "issued", item=item.name, qty=str(-m.qty), unit=item.unit.code)
@@ -79,13 +80,13 @@ def complete_run(run, good_packets, damaged_pouches, packaging_used, user, remar
     """
     run = _locked(run)
     if run.status != RunStatus.IN_PROGRESS:
-        raise ProductionError("Only a run that is in progress can be completed")
+        raise ProductionError(_("Only a run that is in progress can be completed"))
     good, damaged = int(good_packets), int(damaged_pouches)
     if good < 0 or damaged < 0:
-        raise ProductionError("Quantities cannot be negative")
+        raise ProductionError(_("Quantities cannot be negative"))
     pouch = run.sku.pouch_item
     if pouch is None:
-        raise ProductionError(f"{run.sku} has no pouch item set")
+        raise ProductionError(_("%(sku)s has no pouch item set") % {"sku": run.sku})
 
     def use(item, qty, mtype):
         qty = Decimal(qty)
@@ -98,7 +99,7 @@ def complete_run(run, good_packets, damaged_pouches, packaging_used, user, remar
     use(pouch, damaged, MovementType.PRODUCTION_WASTAGE)
     for item, qty in packaging_used.items():
         if item.kind != ItemKind.PACKAGING or item == pouch:
-            raise ProductionError(f"{item.name} is not a packaging item other than the pouch")
+            raise ProductionError(_("%(item)s is not a packaging item other than the pouch") % {"item": item.name})
         use(item, qty, MovementType.PRODUCTION_PACKAGING)
 
     if good > 0:
@@ -121,9 +122,9 @@ def void_run(run, reason, user) -> ProductionRun:
     """Correct a mistaken run: reverse every stock movement, keep the run and its history."""
     run = _locked(run)
     if run.status == RunStatus.VOIDED:
-        raise ProductionError("Run is already voided")
+        raise ProductionError(_("Run is already voided"))
     if not reason.strip():
-        raise ProductionError("A reason is required")
+        raise ProductionError(_("A reason is required"))
     stock.reverse_source(run, f"Void {run.number}: {reason}")
     run.status, run.void_reason = RunStatus.VOIDED, reason
     run.save()

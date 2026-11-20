@@ -1,18 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Stock summary{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Stock summary" %}{% endblock %}
 {% block content %}
-<h1>Stock summary</h1>
-{% if low %}<div class="card"><strong class="st-flag">Low stock:</strong> {% for l in low %}{{ l.item.name }} {{ l.balance|floatformat:"-3" }} {{ l.item.unit }} (level {{ l.level|floatformat:"-3" }}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'low-stock' %}">Details</a></div>{% endif %}
+<h1>{% trans "Stock summary" %}</h1>
+{% if low %}<div class="card"><strong class="st-flag">{% trans "Low stock:" %}</strong> {% for l in low %}{{ l.item.name }} {{ l.balance|floatformat:"-3" }} {{ l.item.unit }} ({% trans "level" %} {{ l.level|floatformat:"-3" }}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'low-stock' %}">{% trans "Details" %}</a></div>{% endif %}
 {% include "filters.html" %}
-{% if expiry %}<div class="card"><strong class="st-flag">Expiry:</strong> {% for e in expiry %}{{ e.batch.number }} ({{ e.on_hand|floatformat:"-3" }}, {% if e.expired %}expired{% else %}{{ e.days_left }} days left{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'batches' %}">Batches</a></div>{% endif %}
+{% if expiry %}<div class="card"><strong class="st-flag">{% trans "Expiry:" %}</strong> {% for e in expiry %}{{ e.batch.number }} ({{ e.on_hand|floatformat:"-3" }}, {% if e.expired %}{% trans "expired" %}{% else %}{% blocktrans with d=e.days_left %}{{ d }} days left{% endblocktrans %}{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}. <a href="{% url 'report' 'batches' %}">{% trans "Batches" %}</a></div>{% endif %}
 {% for title, rows in sections %}
 <h2>{{ title }}</h2>
 <div class="scroll"><table>
-  <tr><th>Item</th><th>Opening</th><th>Receipts</th><th>Issues</th><th>Adjust.</th><th>Closing</th><th>Value ₹</th></tr>
+  <tr><th>{% trans "Item" %}</th><th>{% trans "Opening" %}</th><th>{% trans "Receipts" %}</th><th>{% trans "Issues" %}</th><th>{% trans "Adjust." %}</th><th>{% trans "Closing" %}</th><th>{% trans "Value ₹" %}</th></tr>
   {% for r in rows %}
   <tr class="{% if r.stockable.pk in low_ids and r.stockable.unit %}short{% endif %}"><td>{{ r.stockable }}</td><td>{{ r.opening|floatformat:"-3" }}</td><td>{{ r.receipts|floatformat:"-3" }}</td><td>{{ r.issues|floatformat:"-3" }}</td><td>{{ r.adjustments|floatformat:"-3" }}</td><td><strong>{{ r.closing|floatformat:"-3" }}</strong></td><td>{{ r.value|floatformat:2 }}</td></tr>
-  {% empty %}<tr><td colspan="7">Nothing here yet.</td></tr>{% endfor %}
+  {% empty %}<tr><td colspan="7">{% trans "Nothing here yet." %}</td></tr>{% endfor %}
 </table></div>
 {% endfor %}
-<p><a href="{% url 'stock_ledger' %}">Stock ledger</a> · <a href="{% url 'report' 'batches' %}">Batches and expiry</a>{% if user.role == 'admin' or user.role == 'production' %} · <a href="{% url 'stock_adjust' %}">Adjust stock</a>{% endif %}</p>
+<p><a href="{% url 'stock_ledger' %}">{% trans "Stock ledger" %}</a> · <a href="{% url 'report' 'batches' %}">{% trans "Batches and expiry" %}</a>{% if user.role == 'admin' or user.role == 'production' %} · <a href="{% url 'stock_adjust' %}">{% trans "Adjust stock" %}</a>{% endif %}</p>
 {% endblock %}

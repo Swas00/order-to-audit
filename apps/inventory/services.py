@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.masters.models import Item, Sku
 from apps.masters.units import convert
@@ -25,7 +26,7 @@ class StockError(Exception):
 
 class InsufficientStock(StockError):
     def __init__(self, stockable, available, requested):
-        super().__init__(f"Insufficient stock of {stockable}: available {available}, requested {requested}")
+        super().__init__(_("Insufficient stock of %(item)s: available %(available)s, requested %(requested)s") % {"item": stockable, "available": available, "requested": requested})
         self.available, self.requested = available, requested
 
 
@@ -91,7 +92,7 @@ def receive(stockable, qty, unit_cost, source, movement_type=MovementType.PURCHA
         ratio = convert(1, unit, stockable.unit)  # stock units per entered unit
         qty, unit_cost = qty * ratio, unit_cost / ratio
     if qty <= 0:
-        raise StockError("Receipt quantity must be positive")
+        raise StockError(_("Receipt quantity must be positive"))
     _lock(stockable)
     return _post(stockable, movement_type, qty, unit_cost.quantize(COST_PLACES, ROUND_HALF_UP), source, moved_at, note, batch)
 
@@ -137,7 +138,7 @@ def _allocate(sku, qty, include_expired):
     available = sum((bal for _, bal in batches_with_stock(sku, include_expired=include_expired)), ZERO)
     err = InsufficientStock(sku, available, qty)
     if not include_expired and expired_balance(sku) > 0:
-        err.args = (f"{err.args[0]} (a further {expired_balance(sku)} packets are past expiry and cannot be sold)",)
+        err.args = (_("%(msg)s (a further %(n)s packets are past expiry and cannot be sold)") % {"msg": err.args[0], "n": expired_balance(sku)},)
     raise err
 
 
@@ -147,7 +148,7 @@ def issue_fefo(sku: Sku, qty, source, movement_type, moved_at=None, note="", inc
     weighted-average cost. Expired batches are skipped (sale) unless `include_expired` (write-off)."""
     qty = Decimal(qty)
     if qty <= 0:
-        raise StockError("Issue quantity must be positive")
+        raise StockError(_("Issue quantity must be positive"))
     _lock(sku)
     plan = _allocate(sku, qty, include_expired)
     cost = average_cost(sku)
@@ -164,7 +165,7 @@ def issue(stockable, qty, source, movement_type, moved_at=None, note="", unit=No
         if batch is None:
             return issue_fefo(stockable, qty, source, movement_type, moved_at, note)
         if qty <= 0:
-            raise StockError("Issue quantity must be positive")
+            raise StockError(_("Issue quantity must be positive"))
         _lock(stockable)
         if qty > batch_balance(batch):
             raise InsufficientStock(f"{stockable} batch {batch.number}", batch_balance(batch), qty)
@@ -172,7 +173,7 @@ def issue(stockable, qty, source, movement_type, moved_at=None, note="", unit=No
     if unit is not None and isinstance(stockable, Item):
         qty = convert(qty, unit, stockable.unit)
     if qty <= 0:
-        raise StockError("Issue quantity must be positive")
+        raise StockError(_("Issue quantity must be positive"))
     _lock(stockable)
     available = balance(stockable)
     if qty > available and not allow_negative:
@@ -188,11 +189,11 @@ def adjust(stockable, qty, reason, user, unit_cost=None, is_opening=False, moved
     earliest-expiring stock (expired batches included, so write-offs work)."""
     qty = Decimal(qty)
     if qty == 0:
-        raise StockError("Adjustment quantity cannot be zero")
+        raise StockError(_("Adjustment quantity cannot be zero"))
     _lock(stockable)
     is_sku = isinstance(stockable, Sku)
     if is_sku and qty > 0 and batch is None:
-        raise StockError("Choose the batch the finished goods belong to")
+        raise StockError(_("Choose the batch the finished goods belong to"))
     if qty < 0 and balance(stockable) + qty < 0:
         raise InsufficientStock(stockable, balance(stockable), -qty)
     cost = Decimal(unit_cost) if unit_cost is not None else (average_cost(stockable) if qty < 0 else _fallback_cost(stockable))

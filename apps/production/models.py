@@ -3,12 +3,13 @@ from decimal import Decimal
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class RunStatus(models.TextChoices):
-    IN_PROGRESS = "in_progress", "In progress"
-    COMPLETED = "completed", "Completed"
-    VOIDED = "voided", "Voided"
+    IN_PROGRESS = "in_progress", _("In progress")
+    COMPLETED = "completed", _("Completed")
+    VOIDED = "voided", _("Voided")
 
 
 class ProductionRun(models.Model):

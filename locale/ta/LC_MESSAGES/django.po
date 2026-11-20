@@ -1,0 +1,747 @@
+# Order-to-Audit: Tamil interface for floor staff (machine-drafted, needs native-speaker review).
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: order-to-audit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-20 18:42+0530\n"
+"PO-Revision-Date: 2026-11-20 18:00+0530\n"
+"Last-Translator: Machine-drafted; needs native-speaker review\n"
+"Language-Team: Tamil\n"
+"Language: ta\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Salesman"
+msgstr "விற்பனையாளர்"
+
+msgid "Factory admin"
+msgstr "தொழிற்சாலை நிர்வாகி"
+
+msgid "Production supervisor"
+msgstr "உற்பத்தி மேற்பார்வையாளர்"
+
+msgid "Accountant / auditor (read-only)"
+msgstr "கணக்காளர் / தணிக்கையாளர் (படிக்க மட்டும்)"
+
+msgid "Owner"
+msgstr "உரிமையாளர்"
+
+#| msgid "Started"
+msgid "started"
+msgstr "தொடங்கப்பட்டது"
+
+#| msgid "Issue"
+msgid "issued"
+msgstr "வழங்கப்பட்டது"
+
+#| msgid "Completed"
+msgid "completed"
+msgstr "முடிக்கப்பட்டது"
+
+#| msgid "Voided"
+msgid "voided"
+msgstr "ரத்து செய்யப்பட்டது"
+
+msgid "submitted"
+msgstr "சமர்ப்பிக்கப்பட்டது"
+
+msgid "approved"
+msgstr "ஒப்புதல் அளிக்கப்பட்டது"
+
+#| msgid "Expected"
+msgid "rejected"
+msgstr "நிராகரிக்கப்பட்டது"
+
+#| msgid "Invoices"
+msgid "invoiced"
+msgstr "விலைப்பட்டியல் போடப்பட்டது"
+
+#| msgid "Dispatch (sale)"
+msgid "dispatched"
+msgstr "அனுப்பப்பட்டது"
+
+msgid "cancelled"
+msgstr "ரத்து செய்யப்பட்டது"
+
+msgid "received"
+msgstr "பெறப்பட்டது"
+
+msgid "added"
+msgstr "சேர்க்கப்பட்டது"
+
+msgid "checked in"
+msgstr "செக்-இன் செய்யப்பட்டது"
+
+#| msgid "Product"
+msgid "product"
+msgstr "தயாரிப்பு"
+
+#| msgid "Batches"
+msgid "batches"
+msgstr "தொகுதிகள்"
+
+#| msgid "Expected"
+msgid "expected output"
+msgstr "எதிர்பார்க்கப்பட்ட உற்பத்தி"
+
+msgid "item"
+msgstr "பொருள்"
+
+#| msgid "Qty"
+msgid "qty"
+msgstr "அளவு"
+
+msgid "unit"
+msgstr "அலகு"
+
+#| msgid "Batch"
+msgid "batch"
+msgstr "தொகுதி"
+
+#| msgid "Good packets produced"
+msgid "good packets"
+msgstr "நல்ல பாக்கெட்டுகள்"
+
+#| msgid "Damaged pouches"
+msgid "damaged pouches"
+msgstr "சேதமடைந்த பைகள்"
+
+#| msgid "Packaging used"
+msgid "packaging"
+msgstr "பேக்கிங்"
+
+#| msgid "Remark"
+msgid "remark"
+msgstr "குறிப்பு"
+
+#| msgid "Reason"
+msgid "reason"
+msgstr "காரணம்"
+
+msgid "customer"
+msgstr "வாடிக்கையாளர்"
+
+#| msgid "Lines"
+msgid "lines"
+msgstr "வரிகள்"
+
+#| msgid "Invoices"
+msgid "invoice"
+msgstr "விலைப்பட்டியல்"
+
+msgid "amount"
+msgstr "தொகை"
+
+msgid "kind"
+msgstr "வகை"
+
+#| msgid "Run"
+msgid "run"
+msgstr "இயக்கம்"
+
+msgid "outcome"
+msgstr "முடிவு"
+
+msgid "Log out"
+msgstr "வெளியேறு"
+
+msgid "Material"
+msgstr "பொருள்"
+
+msgid "Finished good"
+msgstr "முடிந்த பொருள்"
+
+msgid "Batch"
+msgstr "தொகுதி"
+
+msgid ""
+"Finished goods only. Required to add stock; if blank when removing, "
+"earliest-expiring stock is used."
+msgstr ""
+"முடிந்த பொருட்களுக்கு மட்டும். இருப்பைச் சேர்க்கத் தொகுதி அவசியம்; "
+"குறைக்கும்போது காலியாக விட்டால், விரைவில் காலாவதியாகும் இருப்பு "
+"எடுக்கப்படும்."
+
+msgid "Quantity (+ add / - remove), in stock unit"
+msgstr "அளவு (+ சேர்க்க / - குறைக்க), இருப்பு அலகில்"
+
+msgid "Reason"
+msgstr "காரணம்"
+
+msgid "Choose either a material or a finished good."
+msgstr ""
+"ஒரு பொருளையோ அல்லது முடிந்த பொருளையோ ஏதேனும் ஒன்றைத் தேர்ந்தெடுக்கவும்."
+
+msgid "That batch does not belong to the chosen finished good."
+msgstr "அந்தத் தொகுதி தேர்ந்தெடுத்த முடிந்த பொருளுக்கு உரியது அல்ல."
+
+msgid "Choose the batch when adding finished goods."
+msgstr "முடிந்த பொருட்களைச் சேர்க்கும்போது தொகுதியைத் தேர்ந்தெடுக்கவும்."
+
+msgid "Opening balance"
+msgstr "தொடக்க இருப்பு"
+
+msgid "Purchase receipt"
+msgstr "கொள்முதல் பெறுதல்"
+
+msgid "Issue to production"
+msgstr "உற்பத்திக்கு வழங்கல்"
+
+msgid "Packaging used"
+msgstr "பயன்படுத்திய பேக்கிங்"
+
+msgid "Damaged / wasted"
+msgstr "சேதம் / வீண்"
+
+msgid "Finished goods produced"
+msgstr "உற்பத்தியான முடிந்த பொருட்கள்"
+
+msgid "Dispatch (sale)"
+msgstr "அனுப்புதல் (விற்பனை)"
+
+msgid "Sales return"
+msgstr "விற்பனைத் திரும்பல்"
+
+msgid "Adjustment"
+msgstr "சரிசெய்தல்"
+
+msgid "Reversal of a voided document"
+msgstr "ரத்து செய்யப்பட்ட ஆவணத்தின் மாற்றியமைப்பு"
+
+#, python-format
+msgid ""
+"Insufficient stock of %(item)s: available %(available)s, requested "
+"%(requested)s"
+msgstr "%(item)s இருப்பு போதாது: உள்ளது %(available)s, கேட்டது %(requested)s"
+
+msgid "Receipt quantity must be positive"
+msgstr "பெறும் அளவு பூஜ்யத்தை விட அதிகமாக இருக்க வேண்டும்"
+
+#, python-format
+msgid "%(msg)s (a further %(n)s packets are past expiry and cannot be sold)"
+msgstr ""
+"%(msg)s (மேலும் %(n)s பாக்கெட்டுகள் காலாவதியாகிவிட்டன, விற்க முடியாது)"
+
+msgid "Issue quantity must be positive"
+msgstr "வழங்கும் அளவு பூஜ்யத்தை விட அதிகமாக இருக்க வேண்டும்"
+
+msgid "Adjustment quantity cannot be zero"
+msgstr "சரிசெய்யும் அளவு பூஜ்யமாக இருக்கக்கூடாது"
+
+msgid "Choose the batch the finished goods belong to"
+msgstr "முடிந்த பொருட்கள் சேரும் தொகுதியைத் தேர்ந்தெடுக்கவும்"
+
+msgid "Adjustment recorded"
+msgstr "சரிசெய்தல் பதிவு செய்யப்பட்டது"
+
+msgid "Product"
+msgstr "தயாரிப்பு"
+
+msgid "Batches (1 = standard batch)"
+msgstr "தொகுதிகள் (1 = நிலையான தொகுதி)"
+
+msgid "Raw material"
+msgstr "மூலப்பொருள்"
+
+msgid "Quantity"
+msgstr "அளவு"
+
+msgid "Unit"
+msgstr "அலகு"
+
+#, python-format
+msgid "%(unit)s cannot be converted to %(stock)s for %(item)s."
+msgstr "%(item)s க்கு %(unit)s ஐ %(stock)s ஆக மாற்ற முடியாது."
+
+msgid "Good packets produced"
+msgstr "உற்பத்தியான நல்ல பாக்கெட்டுகள்"
+
+msgid "Damaged pouches"
+msgstr "சேதமடைந்த பைகள்"
+
+msgid "Remark (cause of wastage, etc.)"
+msgstr "குறிப்பு (வீணானதற்கான காரணம் போன்றவை)"
+
+#, python-format
+msgid "%(item)s used (%(unit)s)"
+msgstr "பயன்படுத்திய %(item)s (%(unit)s)"
+
+msgid "In progress"
+msgstr "நடைபெறுகிறது"
+
+msgid "Completed"
+msgstr "முடிந்தது"
+
+msgid "Voided"
+msgstr "ரத்து செய்யப்பட்டது"
+
+msgid "Batch size must be positive"
+msgstr "தொகுதி அளவு பூஜ்யத்தை விட அதிகமாக இருக்க வேண்டும்"
+
+#, python-format
+msgid "%(sku)s has no active BOM"
+msgstr "%(sku)s க்கு செயலில் உள்ள செய்முறை (BOM) இல்லை"
+
+msgid "Materials can only be issued to a run that is in progress"
+msgstr "நடைபெறும் இயக்கத்திற்கு மட்டுமே பொருட்களை வழங்க முடியும்"
+
+msgid ""
+"Only raw materials are issued here; packaging is recorded on completion"
+msgstr ""
+"இங்கே மூலப்பொருட்கள் மட்டுமே வழங்கப்படும்; பேக்கிங் முடிக்கும்போது பதிவு "
+"செய்யப்படும்"
+
+msgid "Only a run that is in progress can be completed"
+msgstr "நடைபெறும் இயக்கத்தை மட்டுமே முடிக்க முடியும்"
+
+msgid "Quantities cannot be negative"
+msgstr "அளவுகள் எதிர்மறையாக இருக்கக்கூடாது"
+
+#, python-format
+msgid "%(sku)s has no pouch item set"
+msgstr "%(sku)s க்கு பை பொருள் அமைக்கப்படவில்லை"
+
+#, python-format
+msgid "%(item)s is not a packaging item other than the pouch"
+msgstr "%(item)s என்பது பையைத் தவிர்த்த பேக்கிங் பொருள் அல்ல"
+
+msgid "Run is already voided"
+msgstr "இயக்கம் ஏற்கனவே ரத்து செய்யப்பட்டுள்ளது"
+
+msgid "A reason is required"
+msgstr "காரணம் தேவை"
+
+msgid "Check the product and batch size."
+msgstr "தயாரிப்பையும் தொகுதி அளவையும் சரிபார்க்கவும்."
+
+#, python-format
+msgid "Issued %(qty)s %(unit)s of %(item)s"
+msgstr "%(item)s %(qty)s %(unit)s வழங்கப்பட்டது"
+
+msgid "Run completed. Stock updated."
+msgstr "இயக்கம் முடிந்தது. இருப்பு புதுப்பிக்கப்பட்டது."
+
+msgid "Run voided and its stock movements reversed."
+msgstr ""
+"இயக்கம் ரத்து செய்யப்பட்டது; அதன் இருப்புப் பதிவுகள் மாற்றியமைக்கப்பட்டன."
+
+msgid "Supplier"
+msgstr "விநியோகஸ்தர்"
+
+msgid "Bill no"
+msgstr "பில் எண்"
+
+msgid "Bill date"
+msgstr "பில் தேதி"
+
+msgid "Item"
+msgstr "பொருள்"
+
+msgid "Rate (before tax)"
+msgstr "விலை (வரிக்கு முன்)"
+
+msgid "GST %"
+msgstr "GST %"
+
+msgid "Add at least one line."
+msgstr "குறைந்தது ஒரு வரியைச் சேர்க்கவும்."
+
+msgid "Purchase recorded and stock updated"
+msgstr "கொள்முதல் பதிவு செய்யப்பட்டது; இருப்பு புதுப்பிக்கப்பட்டது"
+
+msgid "Order-to-Audit"
+msgstr "ஆர்டர்-முதல்-தணிக்கை"
+
+msgid "From"
+msgstr "முதல்"
+
+msgid "To"
+msgstr "வரை"
+
+msgid "Apply"
+msgstr "பயன்படுத்து"
+
+#, python-format
+msgid "Welcome, %(name)s"
+msgstr "வரவேற்கிறோம், %(name)s"
+
+msgid "Role"
+msgstr "பங்கு"
+
+msgid "Orders"
+msgstr "ஆர்டர்கள்"
+
+msgid "New order"
+msgstr "புதிய ஆர்டர்"
+
+msgid "My orders and status"
+msgstr "என் ஆர்டர்கள் மற்றும் நிலை"
+
+msgid "Check in at a customer"
+msgstr "வாடிக்கையாளரிடம் செக்-இன் செய்"
+
+msgid "My visits"
+msgstr "என் வருகைகள்"
+
+msgid "My customer-wise sales"
+msgstr "என் வாடிக்கையாளர் வாரியான விற்பனை"
+
+msgid "All orders"
+msgstr "அனைத்து ஆர்டர்கள்"
+
+msgid "Customer-wise sales"
+msgstr "வாடிக்கையாளர் வாரியான விற்பனை"
+
+msgid "Salesman visits"
+msgstr "விற்பனையாளர் வருகைகள்"
+
+msgid "Quick links"
+msgstr "விரைவு இணைப்புகள்"
+
+msgid "Dashboard"
+msgstr "முகப்புப் பலகை"
+
+msgid "Reports"
+msgstr "அறிக்கைகள்"
+
+msgid "Stock summary"
+msgstr "இருப்பு சுருக்கம்"
+
+msgid "Stock ledger"
+msgstr "இருப்பு பேரேடு"
+
+msgid "Purchases"
+msgstr "கொள்முதல்கள்"
+
+msgid "Production runs"
+msgstr "உற்பத்தி இயக்கங்கள்"
+
+msgid "Production plan"
+msgstr "உற்பத்தித் திட்டம்"
+
+msgid "Cost per packet"
+msgstr "ஒரு பாக்கெட்டின் செலவு"
+
+msgid "Invoices"
+msgstr "விலைப்பட்டியல்கள்"
+
+msgid "Payments"
+msgstr "பணம் செலுத்தல்கள்"
+
+msgid "Outstanding and ageing"
+msgstr "நிலுவை மற்றும் வயது பகுப்பாய்வு"
+
+msgid "Adjust stock"
+msgstr "இருப்பைச் சரிசெய்"
+
+msgid ""
+"Corrections are recorded as their own document and appear in the ledger."
+msgstr "திருத்தங்கள் தனி ஆவணமாகப் பதிவு செய்யப்பட்டு பேரேட்டில் தோன்றும்."
+
+msgid "Record adjustment"
+msgstr "சரிசெய்தலைப் பதிவு செய்"
+
+msgid "Date"
+msgstr "தேதி"
+
+msgid "Type"
+msgstr "வகை"
+
+msgid "Source document"
+msgstr "மூல ஆவணம்"
+
+msgid "Qty"
+msgstr "அளவு"
+
+msgid "Unit cost ₹"
+msgstr "அலகு விலை ₹"
+
+msgid "Balance"
+msgstr "இருப்பு"
+
+msgid "Brought forward"
+msgstr "முன் கொண்டுவரப்பட்டது"
+
+msgid "No movements in this range."
+msgstr "இந்தக் காலத்தில் பதிவுகள் இல்லை."
+
+msgid "Choose an item and press Apply."
+msgstr "ஒரு பொருளைத் தேர்ந்தெடுத்து \"பயன்படுத்து\" என்பதை அழுத்தவும்."
+
+msgid "Low stock:"
+msgstr "குறைந்த இருப்பு:"
+
+msgid "level"
+msgstr "நிலை"
+
+msgid "Details"
+msgstr "விவரங்கள்"
+
+msgid "Expiry:"
+msgstr "காலாவதி:"
+
+msgid "expired"
+msgstr "காலாவதியானது"
+
+#, python-format
+msgid "%(d)s days left"
+msgstr "%(d)s நாட்கள் மீதம்"
+
+msgid "Batches"
+msgstr "தொகுதிகள்"
+
+msgid "Opening"
+msgstr "தொடக்கம்"
+
+msgid "Receipts"
+msgstr "பெறப்பட்டவை"
+
+msgid "Issues"
+msgstr "வழங்கப்பட்டவை"
+
+msgid "Adjust."
+msgstr "சரிசெய்."
+
+msgid "Closing"
+msgstr "இறுதி"
+
+msgid "Value ₹"
+msgstr "மதிப்பு ₹"
+
+msgid "Nothing here yet."
+msgstr "இங்கே இன்னும் எதுவும் இல்லை."
+
+msgid "Batches and expiry"
+msgstr "தொகுதிகள் மற்றும் காலாவதி"
+
+msgid "Log in"
+msgstr "உள்நுழை"
+
+msgid "Wrong username or password."
+msgstr "பயனர்பெயர் அல்லது கடவுச்சொல் தவறானது."
+
+msgid "Username"
+msgstr "பயனர்பெயர்"
+
+msgid "Password"
+msgstr "கடவுச்சொல்"
+
+#, python-format
+msgid ""
+"%(batches)s batch(es) · expected %(expected)s packets · tolerance ±%(tol)s%%"
+" · by %(by)s"
+msgstr ""
+"%(batches)s தொகுதி(கள்) · எதிர்பார்ப்பு %(expected)s பாக்கெட்டுகள் · சகிப்பு"
+" ±%(tol)s%% · பதிவு செய்தவர் %(by)s"
+
+msgid "Planned vs actual consumption"
+msgstr "திட்டமிட்டது vs உண்மையான பயன்பாடு"
+
+msgid "Planned"
+msgstr "திட்டமிட்டது"
+
+msgid "Actual"
+msgstr "உண்மையில்"
+
+msgid "Variance"
+msgstr "வேறுபாடு"
+
+msgid "n/a"
+msgstr "பொருந்தாது"
+
+msgid "FLAGGED"
+msgstr "எச்சரிக்கை"
+
+msgid "favourable, check"
+msgstr "சாதகம், சரிபார்க்கவும்"
+
+msgid "ok"
+msgstr "சரி"
+
+msgid "Yield"
+msgstr "விளைச்சல்"
+
+#, python-format
+msgid "Expected %(expected)s, actual %(actual)s good packets:"
+msgstr "எதிர்பார்ப்பு %(expected)s, உண்மையில் %(actual)s நல்ல பாக்கெட்டுகள்:"
+
+#, python-format
+msgid "Shortfall %(short)s packets, of which %(damaged)s pouches damaged."
+msgstr ""
+"பற்றாக்குறை %(short)s பாக்கெட்டுகள்; அதில் %(damaged)s பைகள் சேதமடைந்தவை."
+
+#, python-format
+msgid "Material cost ₹%(cost)s."
+msgstr "பொருள் செலவு ₹%(cost)s."
+
+msgid "Remark"
+msgstr "குறிப்பு"
+
+msgid "Finished-goods batch"
+msgstr "முடிந்த பொருள் தொகுதி"
+
+msgid "made"
+msgstr "தயாரிப்பு"
+
+msgid "expires"
+msgstr "காலாவதி"
+
+msgid "Issue raw material"
+msgstr "மூலப்பொருளை வழங்கு"
+
+msgid "Issue"
+msgstr "வழங்கு"
+
+msgid "Complete run (actual output)"
+msgstr "இயக்கத்தை முடி (உண்மையான உற்பத்தி)"
+
+msgid "Complete run"
+msgstr "இயக்கத்தை முடி"
+
+msgid "Void run"
+msgstr "இயக்கத்தை ரத்து செய்"
+
+msgid "Reverses all stock movements of this run. Use to correct a mistake."
+msgstr ""
+"இந்த இயக்கத்தின் அனைத்து இருப்புப் பதிவுகளையும் மாற்றியமைக்கும். தவறைச் "
+"சரிசெய்யப் பயன்படுத்தவும்."
+
+msgid "History"
+msgstr "வரலாறு"
+
+msgid "Production"
+msgstr "உற்பத்தி"
+
+msgid "Plan from pending orders"
+msgstr "நிலுவை ஆர்டர்களிலிருந்து திட்டமிடு"
+
+msgid "Start a run"
+msgstr "இயக்கத்தைத் தொடங்கு"
+
+msgid "Start run"
+msgstr "இயக்கத்தைத் தொடங்கு"
+
+msgid "Run"
+msgstr "இயக்கம்"
+
+msgid "Started"
+msgstr "தொடங்கியது"
+
+msgid "Expected"
+msgstr "எதிர்பார்ப்பு"
+
+msgid "Good"
+msgstr "நல்லவை"
+
+msgid "Status"
+msgstr "நிலை"
+
+msgid "No runs yet."
+msgstr "இன்னும் இயக்கங்கள் இல்லை."
+
+msgid "Production plan from pending orders"
+msgstr "நிலுவை ஆர்டர்களிலிருந்து உற்பத்தித் திட்டம்"
+
+msgid "Demand = orders waiting for approval"
+msgstr "தேவை = ஒப்புதலுக்குக் காத்திருக்கும் ஆர்டர்கள்"
+
+msgid "(excluded)"
+msgstr "(விலக்கப்பட்டது)"
+
+msgid ""
+"+ approved or invoiced orders not yet dispatched. Net need = demand minus "
+"finished goods in stock; batches are rounded up to whole standard batches."
+msgstr ""
+"+ ஒப்புதல் பெற்ற அல்லது விலைப்பட்டியல் போடப்பட்ட, இன்னும் அனுப்பப்படாத "
+"ஆர்டர்கள். நிகர தேவை = தேவை − இருப்பிலுள்ள முடிந்த பொருட்கள்; தொகுதிகள் முழு"
+" நிலையான தொகுதிகளாக மேல்நோக்கி முழுமையாக்கப்படும்."
+
+msgid "Only count approved orders"
+msgstr "ஒப்புதல் பெற்ற ஆர்டர்களை மட்டும் கணக்கிடு"
+
+msgid "Include orders waiting for approval"
+msgstr "ஒப்புதலுக்குக் காத்திருக்கும் ஆர்டர்களையும் சேர்"
+
+msgid "In stock"
+msgstr "இருப்பில்"
+
+msgid "waiting approval"
+msgstr "ஒப்புதலுக்காகக் காத்திருப்பவை"
+
+msgid "approved, not dispatched"
+msgstr "ஒப்புதல் பெற்றவை, அனுப்பப்படாதவை"
+
+msgid "net need"
+msgstr "நிகர தேவை"
+
+#, python-format
+msgid "Make %(counter)s batch"
+msgid_plural "Make %(counter)s batches"
+msgstr[0] "%(counter)s தொகுதி தயாரிக்கவும்"
+msgstr[1] "%(counter)s தொகுதி தயாரிக்கவும்"
+
+#, python-format
+msgid "%(b)s × %(y)s = %(o)s packets expected."
+msgstr "%(b)s × %(y)s = %(o)s பாக்கெட்டுகள் எதிர்பார்க்கப்படுகின்றன."
+
+msgid "Materials in stock cover it."
+msgstr "இருப்பிலுள்ள பொருட்கள் இதற்குப் போதுமானவை."
+
+msgid "Short of materials: buy before starting."
+msgstr "பொருட்கள் பற்றாக்குறை: தொடங்கும் முன் வாங்கவும்."
+
+msgid "Needed"
+msgstr "தேவை"
+
+msgid "On hand"
+msgstr "கையிருப்பு"
+
+msgid "Short"
+msgstr "பற்றாக்குறை"
+
+#, python-format
+msgid "Start run of %(counter)s batch"
+msgid_plural "Start run of %(counter)s batches"
+msgstr[0] "%(counter)s தொகுதிக்கு இயக்கத்தைத் தொடங்கு"
+msgstr[1] "%(counter)s தொகுதிக்கு இயக்கத்தைத் தொடங்கு"
+
+msgid "Stock covers all pending orders. Nothing to make."
+msgstr ""
+"இருப்பு அனைத்து நிலுவை ஆர்டர்களையும் ஈடுசெய்கிறது. தயாரிக்க எதுவும் இல்லை."
+
+msgid "No products with an active BOM."
+msgstr "செயலில் உள்ள செய்முறையுடன் தயாரிப்புகள் இல்லை."
+
+msgid "Purchase register"
+msgstr "கொள்முதல் பதிவேடு"
+
+msgid "Record purchase"
+msgstr "கொள்முதலைப் பதிவு செய்"
+
+msgid "Bill"
+msgstr "பில்"
+
+msgid "Lines"
+msgstr "வரிகள்"
+
+msgid "Taxable ₹"
+msgstr "வரிக்குட்பட்ட மதிப்பு ₹"
+
+msgid "GST ₹"
+msgstr "GST ₹"
+
+msgid "No purchases in this range."
+msgstr "இந்தக் காலத்தில் கொள்முதல்கள் இல்லை."
+
+#, python-format
+msgid "Line %(n)s"
+msgstr "வரி %(n)s"
+
+msgid "Save purchase"
+msgstr "கொள்முதலைச் சேமி"

@@ -1,40 +1,41 @@
 {% extends "base.html" %}
 {% load pretty %}
+{% load i18n %}
 {% block title %}{{ run.number }}{% endblock %}
 {% block content %}
 <h1>{{ run.number }}: {{ run.sku }} <small>({{ run.get_status_display }})</small></h1>
-<p>{{ run.batches|floatformat:"-3" }} batch(es) · expected {{ run.expected_output|floatformat:"-2" }} packets · tolerance ±{{ report.tolerance|floatformat:"-2" }}% · by {{ run.created_by }}</p>
-<h2>Planned vs actual consumption</h2>
+<p>{% blocktrans with batches=run.batches|floatformat:"-3" expected=run.expected_output|floatformat:"-2" tol=report.tolerance|floatformat:"-2" by=run.created_by %}{{ batches }} batch(es) · expected {{ expected }} packets · tolerance ±{{ tol }}% · by {{ by }}{% endblocktrans %}</p>
+<h2>{% trans "Planned vs actual consumption" %}</h2>
 <div class="scroll"><table>
-  <tr><th>Item</th><th>Planned</th><th>Actual</th><th>Variance</th><th></th></tr>
+  <tr><th>{% trans "Item" %}</th><th>{% trans "Planned" %}</th><th>{% trans "Actual" %}</th><th>{% trans "Variance" %}</th><th></th></tr>
   {% for l in report.lines %}
   <tr><td>{{ l.item.name }} ({{ l.unit }})</td><td>{{ l.variance.planned|floatformat:"-3" }}</td><td>{{ l.variance.actual|floatformat:"-3" }}</td>
-      <td>{% if l.variance.pct is None %}n/a{% else %}{{ l.variance.pct|floatformat:2 }}%{% endif %}</td>
-      <td class="st-{{ l.variance.status }}">{% if l.variance.status == 'flag' %}FLAGGED{% elif l.variance.status == 'note' %}favourable, check{% else %}ok{% endif %}</td></tr>
+      <td>{% if l.variance.pct is None %}{% trans "n/a" %}{% else %}{{ l.variance.pct|floatformat:2 }}%{% endif %}</td>
+      <td class="st-{{ l.variance.status }}">{% if l.variance.status == 'flag' %}{% trans "FLAGGED" %}{% elif l.variance.status == 'note' %}{% trans "favourable, check" %}{% else %}{% trans "ok" %}{% endif %}</td></tr>
   {% endfor %}
 </table></div>
 {% if report.yield_variance %}
-<h2>Yield</h2>
-<p>Expected {{ report.yield_variance.planned|floatformat:"-2" }}, actual {{ report.yield_variance.actual }} good packets:
+<h2>{% trans "Yield" %}</h2>
+<p>{% blocktrans with expected=report.yield_variance.planned|floatformat:"-2" actual=report.yield_variance.actual %}Expected {{ expected }}, actual {{ actual }} good packets:{% endblocktrans %}
  <strong>{{ report.yield_variance.pct|floatformat:2 }}%</strong>
- <span class="st-{{ report.yield_variance.status }}">{% if report.yield_variance.status == 'flag' %}FLAGGED{% else %}{{ report.yield_variance.status }}{% endif %}</span>.
- Shortfall {{ report.wastage_packets|floatformat:"-2" }} packets, of which {{ run.damaged_pouches }} pouches damaged.
- Material cost ₹{{ report.material_cost|floatformat:2 }}.{% if run.remark %} Remark: {{ run.remark }}{% endif %}</p>
+ <span class="st-{{ report.yield_variance.status }}">{% if report.yield_variance.status == 'flag' %}{% trans "FLAGGED" %}{% else %}{{ report.yield_variance.status }}{% endif %}</span>.
+ {% blocktrans with short=report.wastage_packets|floatformat:"-2" damaged=run.damaged_pouches %}Shortfall {{ short }} packets, of which {{ damaged }} pouches damaged.{% endblocktrans %}
+ {% blocktrans with cost=report.material_cost|floatformat:2 %}Material cost ₹{{ cost }}.{% endblocktrans %}{% if run.remark %} {% trans "Remark" %}: {{ run.remark }}{% endif %}</p>
 {% endif %}
-{% for b in run.fg_batches.all %}<p>Finished-goods batch: <strong>{{ b.number }}</strong> · made {{ b.mfg_date }} · expires {{ b.expiry_date }}</p>{% endfor %}
-{% if run.status == 'voided' %}<p class="error">Voided: {{ run.void_reason }}</p>{% endif %}
+{% for b in run.fg_batches.all %}<p>{% trans "Finished-goods batch" %}: <strong>{{ b.number }}</strong> · {% trans "made" %} {{ b.mfg_date }} · {% trans "expires" %} {{ b.expiry_date }}</p>{% endfor %}
+{% if run.status == 'voided' %}<p class="error">{% trans "Voided" %}: {{ run.void_reason }}</p>{% endif %}
 
 {% if can_write and in_progress %}
-<div class="card"><h2>Issue raw material</h2>
+<div class="card"><h2>{% trans "Issue raw material" %}</h2>
 {% if issue_form.non_field_errors %}<p class="error">{{ issue_form.non_field_errors }}</p>{% endif %}
-<form method="post" action="{% url 'run_issue' run.pk %}">{% csrf_token %}{{ issue_form.as_p }}<button class="btn" type="submit">Issue</button></form></div>
-<div class="card" style="margin-top:12px"><h2>Complete run (actual output)</h2>
-<form method="post" action="{% url 'run_complete' run.pk %}">{% csrf_token %}{{ complete_form.as_p }}<button class="btn" type="submit">Complete run</button></form></div>
+<form method="post" action="{% url 'run_issue' run.pk %}">{% csrf_token %}{{ issue_form.as_p }}<button class="btn" type="submit">{% trans "Issue" %}</button></form></div>
+<div class="card" style="margin-top:12px"><h2>{% trans "Complete run (actual output)" %}</h2>
+<form method="post" action="{% url 'run_complete' run.pk %}">{% csrf_token %}{{ complete_form.as_p }}<button class="btn" type="submit">{% trans "Complete run" %}</button></form></div>
 {% endif %}
 {% if user.role == 'admin' and run.status != 'voided' %}
-<div class="card" style="margin-top:12px"><h2>Void run</h2><p>Reverses all stock movements of this run. Use to correct a mistake.</p>
-<form method="post" action="{% url 'run_void' run.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required><button class="btn" type="submit">Void run</button></form></div>
+<div class="card" style="margin-top:12px"><h2>{% trans "Void run" %}</h2><p>{% trans "Reverses all stock movements of this run. Use to correct a mistake." %}</p>
+<form method="post" action="{% url 'run_void' run.pk %}">{% csrf_token %}<input name="reason" placeholder="{% trans 'Reason' %}" required><button class="btn" type="submit">{% trans "Void run" %}</button></form></div>
 {% endif %}
-<h2>History</h2>
-<ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
+<h2>{% trans "History" %}</h2>
+<ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action|action_label }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
 {% endblock %}

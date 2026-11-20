@@ -30,5 +30,5 @@
 {% if inv.is_dispatched %}<label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, do not add to stock</option></select>{% endif %}
 <button class="btn" type="submit">Cancel with credit note</button></form></div>
 {% endif %}
-<h2>History</h2><ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
+<h2>History</h2><ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action|action_label }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>
 {% endblock %}
