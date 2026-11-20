@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from apps.accounts import views as account_views
+from apps.billing import views as bill
 from apps.inventory import views as inv
 from apps.production import views as prod
 from apps.purchasing import views as pur
@@ -22,6 +23,17 @@ urlpatterns = [
     path("orders/<int:pk>/approve/", sales.order_approve, name="order_approve"),
     path("orders/<int:pk>/reject/", sales.order_reject, name="order_reject"),
     path("sales/customers/", sales.customer_sales, name="customer_sales"),
+    path("invoices/", bill.invoice_list, name="invoice_list"),
+    path("invoices/<int:pk>/", bill.invoice_detail, name="invoice_detail"),
+    path("invoices/<int:pk>/pdf/", bill.invoice_pdf, name="invoice_pdf"),
+    path("invoices/<int:pk>/dispatch/", bill.invoice_dispatch, name="invoice_dispatch"),
+    path("invoices/<int:pk>/cancel/", bill.invoice_cancel, name="invoice_cancel"),
+    path("orders/<int:order_pk>/invoice/", bill.invoice_raise, name="invoice_raise"),
+    path("credit-notes/<int:pk>/pdf/", bill.credit_note_pdf, name="credit_note_pdf"),
+    path("i/<str:token>.pdf", bill.shared_invoice_pdf, name="shared_invoice_pdf"),
+    path("payments/", bill.payment_list, name="payment_list"),
+    path("payments/new/", bill.payment_new, name="payment_new"),
+    path("receivables/", bill.receivables, name="receivables"),
     path("production/", prod.run_list, name="run_list"),
     path("production/start/", prod.run_start, name="run_start"),
     path("production/<int:pk>/", prod.run_detail, name="run_detail"),

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ inv.number }}{% endblock %}
+{% block content %}
+<h1>{{ inv.number }} <small>({{ inv.get_status_display }}{% if inv.is_dispatched %}, dispatched{% endif %})</small></h1>
+<p>{{ inv.buyer_name }} · GSTIN {{ inv.buyer_gstin|default:"unregistered" }} · place of supply {{ inv.place_of_supply_name }} ({{ inv.place_of_supply_code }}) · {{ inv.invoice_date }} · order <a href="{% url 'order_detail' inv.order.pk %}">{{ inv.order.number }}</a></p>
+<div class="scroll"><table>
+  <tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Taxable</th>{% if inv.intra_state %}<th>CGST</th><th>SGST</th>{% else %}<th>IGST</th>{% endif %}<th>Total</th></tr>
+  {% for l in inv.lines.all %}<tr><td>{{ l.description }}</td><td>{{ l.hsn_code }}</td><td>{{ l.qty }}</td><td>{{ l.rate }}</td><td>{{ l.taxable_value }}</td>
+    {% if inv.intra_state %}<td>{{ l.cgst }}</td><td>{{ l.sgst }}</td>{% else %}<td>{{ l.igst }}</td>{% endif %}<td>{{ l.total }}</td></tr>{% endfor %}
+</table></div>
+<p>Taxable ₹{{ inv.taxable_total }} · {% if inv.intra_state %}CGST ₹{{ inv.cgst_total }} + SGST ₹{{ inv.sgst_total }}{% else %}IGST ₹{{ inv.igst_total }}{% endif %} · round-off ₹{{ inv.round_off }}<br>
+<strong>Total ₹{{ inv.grand_total }}</strong> · paid ₹{{ inv.paid }} · <strong>outstanding ₹{{ inv.outstanding }}</strong></p>
+<p><a class="btn small" href="{% url 'invoice_pdf' inv.pk %}" target="_blank">Download PDF</a>
+<a class="btn small" href="{{ wa_link }}" target="_blank" rel="noopener">Share on WhatsApp</a>
+<a class="btn small" href="{{ mail_link }}">Email</a>
+{% if inv.status == 'cancelled' %}<a class="btn small" href="{% url 'credit_note_pdf' inv.credit_note.pk %}" target="_blank">Credit note {{ inv.credit_note.number }}</a>{% endif %}</p>
+{% if inv.status == 'cancelled' %}<p class="error">Cancelled: {{ inv.credit_note.reason }}</p>{% endif %}
+{% if is_admin and inv.status == 'issued' %}
+{% if not inv.is_dispatched %}
+<div class="card"><h2>Dispatch</h2><form method="post" action="{% url 'invoice_dispatch' inv.pk %}">{% csrf_token %}
+  <input name="vehicle_ref" placeholder="Vehicle / LR no. (optional)"><button class="btn" type="submit">Record dispatch (reduces stock)</button></form></div>
+{% endif %}
+<div class="card" style="margin-top:12px"><h2>Payment</h2><a class="btn small" href="{% url 'payment_new' %}?customer={{ inv.customer.pk }}&invoice={{ inv.pk }}">Record payment</a></div>
+<div class="card" style="margin-top:12px"><h2>Cancel invoice</h2><p>Invoices are never deleted; cancelling raises a credit note.</p>
+<form method="post" action="{% url 'invoice_cancel' inv.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required>
+{% if inv.is_dispatched %}<label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, do not add to stock</option></select>{% endif %}
+<button class="btn" type="submit">Cancel with credit note</button></form></div>
+{% endif %}
+<h2>History</h2><ul>{% for h in history %}<li>{{ h.at|date:"d M H:i" }} · {{ h.user }} · <strong>{{ h.action }}</strong> {{ h.detail }}</li>{% endfor %}</ul>
+{% endblock %}

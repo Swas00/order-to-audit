@@ -21,5 +21,10 @@
   <li><a href="{% url 'stock_ledger' %}">Stock ledger</a></li>
   <li><a href="{% url 'purchase_list' %}">Purchases</a></li>
   <li><a href="{% url 'run_list' %}">Production runs</a></li>
+  {% if user.role != 'production' %}
+  <li><a href="{% url 'invoice_list' %}">Invoices</a></li>
+  <li><a href="{% url 'payment_list' %}">Payments</a></li>
+  <li><a href="{% url 'receivables' %}">Outstanding and ageing</a></li>
+  {% endif %}
 </ul></div>{% endif %}
 {% endblock %}

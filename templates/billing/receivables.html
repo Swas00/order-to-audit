@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Outstanding{% endblock %}
+{% block content %}
+<h1>Outstanding by customer</h1>
+<div class="scroll"><table><tr><th>Customer</th><th>Outstanding ₹</th></tr>
+{% for r in rows %}<tr><td>{{ r.customer }}</td><td>{{ r.balance }}{% if r.balance < 0 %} (credit){% endif %}</td></tr>
+{% empty %}<tr><td colspan="2">Nothing outstanding.</td></tr>{% endfor %}</table></div>
+<h2>Ageing (days since invoice)</h2>
+<div class="scroll"><table><tr><th>Customer</th><th>0-30</th><th>31-60</th><th>61-90</th><th>90+</th><th>Total</th></tr>
+{% for r in ageing %}<tr><td>{{ r.customer }}</td>{% for c in r.cells %}<td>{{ c }}</td>{% endfor %}<td><strong>{{ r.total }}</strong></td></tr>{% endfor %}</table></div>
+{% endblock %}
