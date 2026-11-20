@@ -9,11 +9,13 @@
 <div class="card" style="margin-top:12px"><h2>Orders</h2><ul>
   <li><a class="btn small" href="{% url 'order_new' %}">New order</a></li>
   <li><a href="{% url 'order_list' %}">My orders and status</a></li>
+  <li><a href="{% url 'visit_new' %}">Check in at a customer</a> · <a href="{% url 'visit_list' %}">My visits</a></li>
   <li><a href="{% url 'customer_sales' %}">My customer-wise sales</a></li>
 </ul></div>{% else %}
 <div class="card" style="margin-top:12px"><h2>Orders</h2><ul>
   <li><a href="{% url 'order_list' %}">All orders</a></li>
   <li><a href="{% url 'customer_sales' %}">Customer-wise sales</a></li>
+  {% if user.role == 'admin' or user.role == 'owner' %}<li><a href="{% url 'visit_list' %}">Salesman visits</a></li>{% endif %}
 </ul></div>{% endif %}
 {% if user.role != 'salesman' %}
 <div class="card" style="margin-top:12px"><h2>Quick links</h2><ul>

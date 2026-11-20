@@ -154,6 +154,9 @@ class Customer(models.Model):
     state_name = models.CharField(max_length=40)
     address = models.CharField(max_length=250, blank=True)
     phone = models.CharField(max_length=15, blank=True)
+    pincode = models.CharField(max_length=6, blank=True, help_text="Needed for e-Invoice / e-Way Bill data")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="Shop location for visit check-in distance check")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     salesman = models.ForeignKey("accounts.User", null=True, blank=True, on_delete=models.SET_NULL,
                                  related_name="customers", limit_choices_to={"role": "salesman"})
     active = models.BooleanField(default=True)
@@ -188,6 +191,7 @@ class CompanyProfile(models.Model):
     state_code = models.CharField(max_length=2)
     state_name = models.CharField(max_length=40)
     address = models.CharField(max_length=250, blank=True)
+    pincode = models.CharField(max_length=6, blank=True)
     global_variance_tolerance_pct = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("3.00"))
 
     def save(self, *args, **kwargs):

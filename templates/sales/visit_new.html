@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Check in{% endblock %}
+{% block content %}
+<div class="card"><h1>Check in at a customer</h1>
+<form method="post" id="visitForm">{% csrf_token %}
+  <input type="hidden" name="client_uuid" value="{{ client_uuid }}">
+  <input type="hidden" name="latitude" id="lat"><input type="hidden" name="longitude" id="lon"><input type="hidden" name="accuracy" id="acc">
+  <label for="customer">Customer</label>
+  <select id="customer" name="customer" required><option value="">Choose customer</option>{% for c in customers %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}</select>
+  <label for="outcome">Outcome</label>
+  <select id="outcome" name="outcome" required>{% for v, l in outcomes %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+  <label for="note">Note (optional)</label><input id="note" name="note" maxlength="250">
+  <p id="gps" class="muted">Getting your location...</p>
+  <button class="btn" type="submit">Check in</button>
+</form></div>
+<script>
+(function () {
+  var gps = document.getElementById("gps");
+  if (!navigator.geolocation) { gps.textContent = "Location is not available on this device. The visit will be saved without it."; return; }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    document.getElementById("lat").value = p.coords.latitude.toFixed(6);
+    document.getElementById("lon").value = p.coords.longitude.toFixed(6);
+    document.getElementById("acc").value = Math.round(p.coords.accuracy);
+    gps.textContent = "Location captured (accuracy about " + Math.round(p.coords.accuracy) + " m).";
+  }, function () {
+    gps.textContent = "Location not shared. The visit will be saved without it.";
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+})();
+</script>
+{% endblock %}

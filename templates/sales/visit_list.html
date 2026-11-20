@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Visits{% endblock %}
+{% block content %}
+<h1>Visits</h1>
+{% if user.role == 'salesman' %}<p><a class="btn small" href="{% url 'visit_new' %}">Check in</a></p>{% endif %}
+<div class="scroll"><table><tr><th>Time</th>{% if user.role != 'salesman' %}<th>Salesman</th>{% endif %}<th>Customer</th><th>Outcome</th><th>Location</th><th>Note</th></tr>
+{% for v in visits %}<tr><td>{{ v.checked_in_at|date:"d M H:i" }}</td>{% if user.role != 'salesman' %}<td>{{ v.salesman.get_full_name|default:v.salesman.username }}</td>{% endif %}<td>{{ v.customer }}</td><td>{{ v.get_outcome_display }}</td>
+<td class="{% if v.location_status == 'Far from shop' %}st-flag{% endif %}">{{ v.location_status }}{% if v.distance_m is not None %} ({{ v.distance_m }} m){% endif %}</td><td>{{ v.note }}</td></tr>
+{% empty %}<tr><td colspan="6">No visits yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

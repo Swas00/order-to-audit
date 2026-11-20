@@ -113,3 +113,33 @@ def order_reject(request, pk):
 def customer_sales(request):
     mine = request.user if request.user.role == Role.SALESMAN else None
     return render(request, "sales/customer_sales.html", {"rows": services.customer_wise_sales(mine)})
+
+
+@roles_required(Role.SALESMAN)
+def visit_new(request):
+    from .models import VisitOutcome
+    customers = Customer.objects.filter(salesman=request.user, active=True)
+    if request.method == "POST":
+        try:
+            customer = customers.filter(pk=to_pk(request.POST.get("customer"))).first()
+            if customer is None:
+                raise services.OrderError("Choose a customer")
+            services.check_in(request.user, customer, request.POST.get("outcome", ""), request.POST.get("latitude"),
+                              request.POST.get("longitude"), request.POST.get("accuracy"), request.POST.get("note", ""),
+                              uuid.UUID(request.POST.get("client_uuid", "")))
+            messages.success(request, f"Checked in at {customer.name}")
+            return redirect("visit_list")
+        except ValueError:
+            messages.error(request, "Please try again.")
+        except services.OrderError as e:
+            messages.error(request, str(e))
+    return render(request, "sales/visit_new.html", {"customers": customers, "outcomes": VisitOutcome.choices, "client_uuid": uuid.uuid4()})
+
+
+@roles_required(Role.SALESMAN, Role.ADMIN, Role.OWNER)
+def visit_list(request):
+    from .models import Visit
+    visits = Visit.objects.select_related("customer", "salesman")
+    if request.user.role == Role.SALESMAN:
+        visits = visits.filter(salesman=request.user)
+    return render(request, "sales/visit_list.html", {"visits": visits[:200]})

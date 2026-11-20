@@ -38,7 +38,7 @@ def seed_masters():
     units = {c: Unit.objects.update_or_create(code=c, defaults=dict(name=n, dimension=d, factor=D(f)))[0]
              for c, n, d, f in UNITS}
     CompanyProfile(name="Demo Snacks Pvt Ltd", gstin="33AABCD1234E1Z5", state_code="33",
-                   state_name="Tamil Nadu", address="Tiruchirappalli, Tamil Nadu").save()
+                   state_name="Tamil Nadu", address="Tiruchirappalli, Tamil Nadu", pincode="620001").save()
     items = {c: Item.objects.update_or_create(code=c, defaults=dict(name=n, kind=k, unit=units[u], standard_rate=D(r)))[0]
              for c, n, k, u, r in ITEMS}
     for code, level in REORDER.items():
@@ -52,10 +52,10 @@ def seed_masters():
     sa, sb = User.objects.filter(username__in=["salesman_a", "salesman_b"]).order_by("username")
     Customer.objects.update_or_create(name="Retailer A", defaults=dict(
         kind="retailer", gstin="33AAACR1111A1Z5", state_code="33", state_name="Tamil Nadu",
-        address="Trichy, Tamil Nadu", salesman=sa))
+        address="Trichy, Tamil Nadu", pincode="620002", latitude=D("10.805000"), longitude=D("78.685000"), phone="9000000001", salesman=sa))
     Customer.objects.update_or_create(name="Distributor B", defaults=dict(
         kind="distributor", gstin="29AAACD2222B1Z6", state_code="29", state_name="Karnataka",
-        address="Bengaluru, Karnataka", salesman=sb))
+        address="Bengaluru, Karnataka", pincode="560001", latitude=D("12.971600"), longitude=D("77.594600"), phone="9000000002", salesman=sb))
 
 
 class Command(BaseCommand):

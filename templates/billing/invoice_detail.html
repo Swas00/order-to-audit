@@ -15,6 +15,8 @@
 <p><a class="btn small" href="{% url 'invoice_pdf' inv.pk %}" target="_blank">Download PDF</a>
 <a class="btn small" href="{{ wa_link }}" target="_blank" rel="noopener">Share on WhatsApp</a>
 <a class="btn small" href="{{ mail_link }}">Email</a>
+<a class="btn small" href="{% url 'einvoice_json' inv.pk %}">e-Invoice JSON (mock)</a>
+<a class="btn small" href="{% url 'eway_json' inv.pk %}">e-Way Bill JSON (mock)</a>
 {% if inv.status == 'cancelled' %}<a class="btn small" href="{% url 'credit_note_pdf' inv.credit_note.pk %}" target="_blank">Credit note {{ inv.credit_note.number }}</a>{% endif %}</p>
 {% if inv.status == 'cancelled' %}<p class="error">Cancelled: {{ inv.credit_note.reason }}</p>{% endif %}
 {% if is_admin and inv.status == 'issued' %}

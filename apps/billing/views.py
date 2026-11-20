@@ -146,3 +146,41 @@ def batch_trace(request, pk):
     batch = get_object_or_404(Batch.objects.select_related("sku", "run"), pk=pk)
     return render(request, "billing/batch_trace.html", {"batch": batch, "on_hand": stock.batch_balance(batch),
                                                        "shipments": services.batch_trace(batch)})
+
+
+@roles_required(*READ)
+def tally_export(request):
+    """Vouchers for the date range as Tally import XML: invoices, credit notes and receipts."""
+    from django.utils import timezone  # noqa: F401
+    from apps.masters.models import CompanyProfile
+    from . import tally
+    d_from, d_to, _, _ = date_range(request)
+    invoices = Invoice.objects.filter(invoice_date__range=(d_from, d_to)).select_related("order").order_by("invoice_date", "id")
+    credit_notes = CreditNote.objects.filter(note_date__range=(d_from, d_to)).select_related("invoice", "invoice__order").order_by("note_date", "id")
+    payments = Payment.objects.filter(paid_on__range=(d_from, d_to)).select_related("customer").order_by("paid_on", "id")
+    xml = tally.build_tally_xml(invoices, credit_notes, payments, CompanyProfile.get().name)
+    resp = HttpResponse(xml, content_type="application/xml")
+    resp["Content-Disposition"] = f'attachment; filename="tally-{d_from}-{d_to}.xml"'
+    return resp
+
+
+def _json_download(data, filename):
+    import json
+    resp = HttpResponse(json.dumps(data, indent=2, ensure_ascii=False), content_type="application/json")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
+
+
+@roles_required(*READ)
+def einvoice_json(request, pk):
+    from . import einvoice
+    inv = get_object_or_404(Invoice, pk=pk)
+    return _json_download(einvoice.build_einvoice(inv), f"einvoice-{inv.number.replace('/', '-')}.json")
+
+
+@roles_required(*READ)
+def eway_json(request, pk):
+    from . import einvoice
+    inv = get_object_or_404(Invoice.objects.select_related("dispatch"), pk=pk)
+    vehicle = inv.dispatch.vehicle_ref if inv.is_dispatched else ""
+    return _json_download(einvoice.build_eway_bill(inv, vehicle), f"ewaybill-{inv.number.replace('/', '-')}.json")

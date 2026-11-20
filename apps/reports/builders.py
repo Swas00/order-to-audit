@@ -268,3 +268,13 @@ def batch_report(d_from, d_to):
         rows.append((str(b.sku), b.number, b.run.number if b.run else b.note, b.mfg_date, b.expiry_date, days, bal, status))
     return [Table("Finished goods by batch (first expiry first)", ["Product", "Batch", "Source", "Made", "Expires", "Days left", "On hand", "Status"], rows,
                   f"Dispatch takes the earliest-expiring non-expired batch first. 'Expires soon' = within {stock.NEAR_EXPIRY_DAYS} days.")]
+
+
+def visit_log(d_from, d_to):
+    from apps.sales.models import Visit
+    rows = [(timezone.localtime(v.checked_in_at).strftime("%Y-%m-%d %H:%M"), v.salesman.get_full_name() or v.salesman.username,
+             v.customer.name, v.get_outcome_display(), v.latitude, v.longitude, v.accuracy_m, v.distance_m, v.location_status, v.note)
+            for v in Visit.objects.filter(checked_in_at__date__range=(d_from, d_to)).select_related("salesman", "customer").order_by("checked_in_at")]
+    return [Table("Salesman visit log", ["Time", "Salesman", "Customer", "Outcome", "Latitude", "Longitude", "GPS accuracy (m)",
+                                         "Metres from shop", "Location check", "Note"], rows,
+                  "Far from shop = more than 300 m from the customer's recorded location.")]

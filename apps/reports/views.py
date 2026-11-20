@@ -29,6 +29,7 @@ REPORTS = {
     "customer-sales": ("Customer-wise sales", builders.customer_sales, FIN, "Net sales per customer"),
     "product-sales": ("Product-wise sales", builders.product_sales, FIN, "Packets and value per product"),
     "gst-summary": ("GST summary (GSTR-1 / GSTR-3B)", builders.gst_summary, FIN, "Outward supplies in GSTR-1 table shapes"),
+    "visit-log": ("Salesman visit log", builders.visit_log, (Role.ADMIN, Role.OWNER), "GPS check-ins with distance from the shop"),
     "purchase-register": ("Purchase register", builders.purchase_register, FLOOR, "Supplier bills line by line"),
     "batches": ("Finished goods by batch and expiry", builders.batch_report, FLOOR, "Batch numbers, expiry dates and stock on hand"),
     "low-stock": ("Low-stock alerts", builders.low_stock_report, FLOOR, "Raw and packaging items at or below reorder level"),

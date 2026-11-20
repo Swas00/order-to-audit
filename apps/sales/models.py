@@ -66,3 +66,37 @@ class OrderLine(models.Model):
     @property
     def amount(self):
         return (self.qty * self.price).quantize(PAISA, ROUND_HALF_UP)
+
+
+class VisitOutcome(models.TextChoices):
+    ORDER = "order", "Order taken"
+    NO_ORDER = "no_order", "No order"
+    FOLLOW_UP = "follow_up", "Follow up later"
+    CLOSED = "closed", "Shop closed"
+
+
+class Visit(models.Model):
+    """A salesman's check-in at a customer, with the phone's GPS position when available."""
+
+    salesman = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="visits")
+    customer = models.ForeignKey("masters.Customer", on_delete=models.PROTECT, related_name="visits")
+    client_uuid = models.UUIDField(null=True, blank=True, unique=True)  # a double tap must not log two visits
+    checked_in_at = models.DateTimeField(default=timezone.now, db_index=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    accuracy_m = models.PositiveIntegerField(null=True, blank=True, help_text="GPS accuracy reported by the phone")
+    distance_m = models.PositiveIntegerField(null=True, blank=True, help_text="Metres from the shop's recorded location")
+    outcome = models.CharField(max_length=12, choices=VisitOutcome.choices)
+    note = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        ordering = ["-checked_in_at", "-id"]
+
+    @property
+    def location_status(self):
+        from .geo import FAR_METERS
+        if self.latitude is None:
+            return "No location"
+        if self.distance_m is None:
+            return "Shop location not recorded"
+        return "Far from shop" if self.distance_m > FAR_METERS else "At shop"

@@ -163,3 +163,43 @@ def customer_wise_sales(salesman=None):
         row["packets"] += sum(l.qty for l in o.lines.all())
         row["value"] += o.taxable_total
     return sorted(totals.values(), key=lambda r: -r["value"])
+
+
+def check_in(salesman, customer: Customer, outcome, latitude=None, longitude=None, accuracy_m=None, note="", client_uuid=None):
+    """Log a visit. Coordinates are optional (phone may deny GPS) but must be sane when given.
+    Idempotent on `client_uuid`."""
+    from .geo import distance_m
+    from .models import Visit, VisitOutcome
+
+    if client_uuid:
+        existing = Visit.objects.filter(client_uuid=client_uuid).first()
+        if existing:
+            if existing.salesman_id != salesman.pk:
+                raise OrderError("This submission reference is already used")
+            return existing
+    if customer.salesman_id != salesman.pk or not customer.active:
+        raise OrderError("This customer is not on your list")
+    if outcome not in VisitOutcome.values:
+        raise OrderError("Choose the outcome of the visit")
+    lat = lon = None
+    if latitude not in (None, "") or longitude not in (None, ""):
+        try:
+            lat, lon = Decimal(str(latitude)), Decimal(str(longitude))
+        except Exception:
+            raise OrderError("Location is not valid")
+        if not (lat.is_finite() and lon.is_finite()) or not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            raise OrderError("Location is not valid")
+        lat, lon = lat.quantize(Decimal("0.000001")), lon.quantize(Decimal("0.000001"))
+    acc = None
+    if accuracy_m not in (None, ""):
+        try:
+            acc = max(0, min(int(float(accuracy_m)), 100000))
+        except (ValueError, OverflowError):
+            acc = None
+    dist = None
+    if lat is not None and customer.latitude is not None and customer.longitude is not None:
+        dist = distance_m(lat, lon, customer.latitude, customer.longitude)
+    visit = Visit.objects.create(salesman=salesman, customer=customer, outcome=outcome, latitude=lat, longitude=lon,
+                                 accuracy_m=acc, distance_m=dist, note=note[:250], client_uuid=client_uuid)
+    record(salesman, visit, "checked_in", customer=customer.name, outcome=outcome, distance_m=dist)
+    return visit
