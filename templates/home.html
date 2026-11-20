@@ -3,7 +3,7 @@
 <div class="card">
   <h1>Welcome, {{ user.get_full_name|default:user.username }}</h1>
   <p>Role: <strong>{{ user.get_role_display }}</strong></p>
-  <p>Coming for this role: {{ coming }}</p>
+  <p>{{ coming }}</p>
 </div>
 {% if user.role == 'salesman' %}
 <div class="card" style="margin-top:12px"><h2>Orders</h2><ul>
@@ -17,6 +17,8 @@
 </ul></div>{% endif %}
 {% if user.role != 'salesman' %}
 <div class="card" style="margin-top:12px"><h2>Quick links</h2><ul>
+  {% if user.role == 'admin' %}<li><a href="{% url 'dashboard' %}">Dashboard</a></li>{% endif %}
+  <li><a href="{% url 'reports' %}">Reports</a></li>
   <li><a href="{% url 'stock_summary' %}">Stock summary</a></li>
   <li><a href="{% url 'stock_ledger' %}">Stock ledger</a></li>
   <li><a href="{% url 'purchase_list' %}">Purchases</a></li>

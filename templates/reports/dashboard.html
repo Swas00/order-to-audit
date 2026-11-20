@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard <small class="muted">{{ today }}</small></h1>
+<div class="grid">
+  <div class="card"><h2>Today's orders</h2><p class="big">{{ orders_today }}</p><p>{{ packets }} packets · ₹{{ value }} before GST<br>
+    {% for label, n in by_status %}{% if n %}{{ label }} {{ n }} · {% endif %}{% endfor %}</p>
+    <p><a href="{% url 'order_list' %}?status=submitted">{{ pending }} awaiting approval</a></p></div>
+  <div class="card"><h2>This month's sales (net)</h2><p class="big">₹{{ month_total }}</p><p>₹{{ month_taxable }} before GST</p><a href="{% url 'report' 'sales-register' %}">Sales register</a></div>
+  <div class="card"><h2>Outstanding dues</h2><p class="big">₹{{ total_due }}</p>
+    {% for c, b in top_due %}<p>{{ c }}: ₹{{ b }}</p>{% empty %}<p>Nothing outstanding.</p>{% endfor %}<a href="{% url 'report' 'outstanding' %}">Ageing</a></div>
+</div>
+<h2>Variance alerts (last 30 days)</h2>
+<div class="card">{% for run, flags in alerts %}<p><a href="{% url 'run_detail' run.pk %}">{{ run.number }}</a> {{ run.sku }}: <span class="st-flag">{{ flags|join:", " }}</span></p>
+{% empty %}<p class="st-ok">No flagged variances.</p>{% endfor %}</div>
+{% if low %}<h2>Low stock</h2><div class="card">{% for i in low %}<p class="st-flag">{{ i.name }} is at or below its reorder level ({{ i.reorder_level|floatformat:"-3" }} {{ i.unit }})</p>{% endfor %}</div>{% endif %}
+<h2>Cost per packet (this month)</h2>
+<div class="scroll"><table><tr><th>Product</th><th>Cost ₹</th><th>Price ₹</th><th>Margin %</th></tr>
+{% for s in costs %}<tr><td>{{ s.sku }}</td><td>{{ s.per_packet|floatformat:2 }}</td><td>{{ s.price }}</td><td>{{ s.margin_pct }}%</td></tr>{% empty %}<tr><td colspan="4">No completed runs this month.</td></tr>{% endfor %}</table></div>
+<h2>Stock levels</h2>
+<div class="scroll"><table><tr><th>Type</th><th>Item</th><th>Balance</th></tr>
+{% for kind, name, bal, is_low in stock_rows %}<tr class="{% if is_low %}short{% endif %}"><td>{{ kind }}</td><td>{{ name }}</td><td>{{ bal|floatformat:"-3" }}</td></tr>{% endfor %}</table></div>
+{% endblock %}

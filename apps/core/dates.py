@@ -20,3 +20,9 @@ def date_range(request):
     tz = timezone.get_current_timezone()
     return (d_from, d_to, timezone.make_aware(datetime.combine(d_from, time.min), tz),
             timezone.make_aware(datetime.combine(d_to, time.max), tz))
+
+
+def aware_range(d_from, d_to):
+    """Whole-day aware datetimes for a (date, date) pair."""
+    tz = timezone.get_current_timezone()
+    return (timezone.make_aware(datetime.combine(d_from, time.min), tz), timezone.make_aware(datetime.combine(d_to, time.max), tz))

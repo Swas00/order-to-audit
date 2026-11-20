@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="get" class="filters">
+  <label>From <input type="date" name="from" value="{{ d_from|date:'Y-m-d' }}"></label>
+  <label>To <input type="date" name="to" value="{{ d_to|date:'Y-m-d' }}"></label>
+  <button class="btn small" type="submit">Apply</button>
+  <button class="btn small" name="export" value="csv" type="submit">CSV</button>
+  <button class="btn small" name="export" value="xlsx" type="submit">Excel</button>
+  <button class="btn small" name="export" value="pdf" type="submit">PDF</button>
+</form>
+{% for t in tables %}
+<h2>{{ t.title }}</h2>{% if t.note %}<p class="muted">{{ t.note }}</p>{% endif %}
+<div class="scroll"><table><tr>{% for h in t.headers %}<th>{{ h }}</th>{% endfor %}</tr>
+{% for r in t.rows %}<tr>{% for c in r %}<td>{{ c|default_if_none:"" }}</td>{% endfor %}</tr>
+{% empty %}<tr><td colspan="{{ t.headers|length }}">No data in this range.</td></tr>{% endfor %}</table></div>
+{% endfor %}
+{% endblock %}

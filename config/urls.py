@@ -8,6 +8,7 @@ from apps.costing import views as cost
 from apps.inventory import views as inv
 from apps.production import views as prod
 from apps.purchasing import views as pur
+from apps.reports import views as rep
 from apps.sales import views as sales
 
 urlpatterns = [
@@ -38,6 +39,9 @@ urlpatterns = [
     path("costing/", cost.costing, name="costing"),
     path("costing/add/", cost.overhead_add, name="overhead_add"),
     path("costing/<int:pk>/void/", cost.overhead_void, name="overhead_void"),
+    path("reports/", rep.hub, name="reports"),
+    path("reports/<slug:slug>/", rep.report, name="report"),
+    path("dashboard/", rep.dashboard, name="dashboard"),
     path("production/", prod.run_list, name="run_list"),
     path("production/start/", prod.run_start, name="run_start"),
     path("production/<int:pk>/", prod.run_detail, name="run_detail"),
