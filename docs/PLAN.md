@@ -1,3 +1,5 @@
+> **Historical planning document, written before building.** What was actually built, and where it differs, is in `README.md`, `docs/DESIGN.md` and `docs/TRACEABILITY.md`. Notable differences: all stretch goals were built (the plan listed only some); batch tracking, Tamil and the visit log were added later; Docker Compose was never run.
+
 # Order-to-Audit System: Decisions and Plan (Phase 2-3)
 
 Source: "Problem Statement - Winter Internship Application - 2026" (7 pages). Status of every item below: NOT STARTED.

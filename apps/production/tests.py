@@ -246,3 +246,12 @@ def test_role_access(client, seeded):
                     pk=run.pk).status_code == write, username
         assert post(client, "run_void", {"reason": "x"}, pk=run.pk).status_code == void, username
         client.logout()
+
+
+def test_completion_form_prefills_packaging_as_plain_numbers(seeded):
+    from apps.production.forms import CompleteForm
+    run = prod.start_run(FG(), 1, User.objects.get(username="production"))
+    html = str(CompleteForm(run)["pack_%d" % item("CARTON20").pk])
+    assert 'value="10"' in html and "E+" not in html
+    half = prod.start_run(FG(), D("0.5"), User.objects.get(username="production"))
+    assert 'value="5"' in str(CompleteForm(half)["pack_%d" % item("CARTON20").pk])

@@ -35,7 +35,7 @@ class CompleteForm(forms.Form):
             if line.item.kind == ItemKind.PACKAGING and line.item != pouch:
                 name = f"pack_{line.item_id}"
                 self.fields[name] = forms.DecimalField(
-                    min_value=0, max_digits=14, decimal_places=4, initial=line.planned_qty.normalize(),
+                    min_value=0, max_digits=14, decimal_places=4, initial=format(line.planned_qty.normalize(), "f"),  # '10', never '1E+1'
                     label=_("%(item)s used (%(unit)s)") % {"item": line.item.name, "unit": line.item.unit.code})
                 self.packaging.append((line.item, name))
 
