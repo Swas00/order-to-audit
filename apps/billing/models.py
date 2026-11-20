@@ -88,12 +88,36 @@ class Invoice(models.Model):
         return money_sum(self.allocations.aggregate(t=Sum("amount"))["t"])
 
     @property
+    def credited_total(self):
+        return money_sum(self.credit_notes.aggregate(t=Sum("grand_total"))["t"])
+
+    @property
     def outstanding(self):
-        return ZERO if self.status == InvoiceStatus.CANCELLED else self.grand_total - self.paid
+        """What the customer still owes: invoice total less credit notes less payments. Cancelled invoices owe nothing."""
+        return ZERO if self.status == InvoiceStatus.CANCELLED else self.grand_total - self.credited_total - self.paid
+
+    @property
+    def credit_note(self):
+        """The latest credit note (for a cancelled invoice, the one that cancelled it), or None."""
+        return self.credit_notes.order_by("-id").first()
+
+    @property
+    def dispatch(self):
+        """The latest dispatch, or None."""
+        return self.dispatches.order_by("-id").first()
 
     @property
     def is_dispatched(self):
-        return hasattr(self, "dispatch")
+        """True once any goods have left (partly or fully)."""
+        return self.dispatches.exists()
+
+    @property
+    def dispatch_state(self):
+        """'none', 'partial' or 'full': are all the goods still owed to the customer on their way?"""
+        lines = list(self.lines.all())
+        if not any(l.dispatched_qty for l in lines):
+            return "none"
+        return "full" if all(l.remaining_to_dispatch == 0 for l in lines) else "partial"
 
 
 class InvoiceLine(models.Model):
@@ -113,24 +137,62 @@ class InvoiceLine(models.Model):
     def total(self):
         return self.taxable_value + self.cgst + self.sgst + self.igst
 
+    @property
+    def dispatched_qty(self):
+        return self.dispatch_lines.aggregate(t=Sum("qty"))["t"] or 0
+
+    @property
+    def credited_qty(self):
+        return self.credit_lines.aggregate(t=Sum("qty"))["t"] or 0
+
+    @property
+    def returned_qty(self):
+        return self.credit_lines.aggregate(t=Sum("qty_returned"))["t"] or 0
+
+    @property
+    def creditable_qty(self):
+        """Packets of this line not yet covered by a credit note."""
+        return self.qty - self.credited_qty
+
+    @property
+    def returnable_qty(self):
+        """Packets that left the factory and have not come back."""
+        return self.dispatched_qty - self.returned_qty
+
+    @property
+    def remaining_to_dispatch(self):
+        """Packets still owed to the customer (not credited) that have not left yet."""
+        return max(self.creditable_qty - self.returnable_qty, 0)
+
 
 class Dispatch(models.Model):
     """Goods leave the factory. This is the source document of the finished-goods stock reduction."""
 
-    invoice = models.OneToOneField(Invoice, on_delete=models.PROTECT, related_name="dispatch")
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="dispatches")
     dispatched_at = models.DateTimeField(default=timezone.now)
     vehicle_ref = models.CharField(max_length=40, blank=True)
     user = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f"Dispatch of {self.invoice.number}"
+        return f"Dispatch #{self.pk} of {self.invoice.number}"
+
+
+class DispatchLine(models.Model):
+    """How many packets of one invoice line left in this dispatch (an invoice may ship in several lots)."""
+
+    dispatch = models.ForeignKey(Dispatch, on_delete=models.PROTECT, related_name="lines")
+    invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.PROTECT, related_name="dispatch_lines")
+    qty = models.PositiveIntegerField()
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=Q(qty__gt=0), name="dispatchline_qty_positive")]
 
 
 class CreditNote(models.Model):
-    """Full cancellation of an invoice. Amounts are the invoice's, shown as a reduction."""
+    """Reduces an invoice: a full cancellation or a partial return/credit. Amounts come from its lines."""
 
     number = models.CharField(max_length=30, unique=True)
-    invoice = models.OneToOneField(Invoice, on_delete=models.PROTECT, related_name="credit_note")
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="credit_notes")
     note_date = models.DateField(default=timezone.localdate)
     reason = models.CharField(max_length=250)
     goods_returned = models.BooleanField(default=False)
@@ -138,12 +200,36 @@ class CreditNote(models.Model):
     cgst_total = models.DecimalField(max_digits=14, decimal_places=2)
     sgst_total = models.DecimalField(max_digits=14, decimal_places=2)
     igst_total = models.DecimalField(max_digits=14, decimal_places=2)
+    round_off = models.DecimalField(max_digits=6, decimal_places=2, default=ZERO)
     grand_total = models.DecimalField(max_digits=14, decimal_places=2)
     created_by = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.number
+
+    @property
+    def is_full(self):
+        return self.invoice.status == InvoiceStatus.CANCELLED and self.pk == self.invoice.credit_note.pk
+
+
+class CreditNoteLine(models.Model):
+    """Packets credited from one invoice line, how many of them came back into stock, and the tax credited."""
+
+    credit_note = models.ForeignKey(CreditNote, on_delete=models.PROTECT, related_name="lines")
+    invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.PROTECT, related_name="credit_lines")
+    qty = models.PositiveIntegerField()
+    qty_returned = models.PositiveIntegerField(default=0)
+    taxable_value = models.DecimalField(max_digits=14, decimal_places=2)
+    cgst = models.DecimalField(max_digits=14, decimal_places=2, default=ZERO)
+    sgst = models.DecimalField(max_digits=14, decimal_places=2, default=ZERO)
+    igst = models.DecimalField(max_digits=14, decimal_places=2, default=ZERO)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(qty__gt=0), name="creditline_qty_positive"),
+            models.CheckConstraint(condition=Q(qty_returned__lte=models.F("qty")), name="creditline_returned_within_qty"),
+        ]
 
 
 class PaymentMode(models.TextChoices):

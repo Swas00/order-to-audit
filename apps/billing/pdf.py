@@ -59,13 +59,17 @@ def credit_note_pdf(cn) -> bytes:
     inv = cn.invoice
     buf = BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=14 * mm, rightMargin=14 * mm, title=f"Credit Note {cn.number}")
+    items = [["Item", "HSN", "Packets", "Rate", "Taxable"]] + [
+        [l.invoice_line.description, l.invoice_line.hsn_code, str(l.qty), _m(l.invoice_line.rate), _m(l.taxable_value)]
+        for l in cn.lines.select_related("invoice_line")]
     rows = [["Taxable value", _m(cn.taxable_total)], ["CGST", _m(cn.cgst_total)], ["SGST", _m(cn.sgst_total)],
-            ["IGST", _m(cn.igst_total)], ["Credit note total", _m(cn.grand_total)]]
+            ["IGST", _m(cn.igst_total)], ["Round off", _m(cn.round_off)], ["Credit note total", _m(cn.grand_total)]]
     story = [Paragraph("<b>CREDIT NOTE</b>", styles["Title"]),
              Paragraph(f"<b>{inv.supplier_name}</b> (GSTIN {inv.supplier_gstin})", styles["BodyText"]),
              Paragraph(f"Credit note no: {cn.number} &nbsp; Date: {cn.note_date:%d-%m-%Y}<br/>Against invoice: {inv.number} dated "
                        f"{inv.invoice_date:%d-%m-%Y}<br/>To: {inv.buyer_name} (GSTIN {inv.buyer_gstin or 'Unregistered'})<br/>"
                        f"Reason: {cn.reason}", styles["BodyText"]), Spacer(1, 5 * mm),
+             Table(items, style=GRID, colWidths=[62 * mm, 24 * mm, 24 * mm, 30 * mm, 38 * mm]), Spacer(1, 4 * mm),
              Table(rows, style=GRID, colWidths=[60 * mm, 40 * mm]), Spacer(1, 3 * mm),
              Paragraph(f"Amount in words: {amount_in_words(cn.grand_total)}", SMALL)]
     doc.build(story)

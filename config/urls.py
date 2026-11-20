@@ -41,6 +41,7 @@ urlpatterns = [
     path("invoices/<int:pk>/dispatch/", bill.invoice_dispatch, name="invoice_dispatch"),
     path("invoices/<int:pk>/cancel/", bill.invoice_cancel, name="invoice_cancel"),
     path("orders/<int:order_pk>/invoice/", bill.invoice_raise, name="invoice_raise"),
+    path("invoices/<int:pk>/return/", bill.invoice_return, name="invoice_return"),
     path("credit-notes/<int:pk>/pdf/", bill.credit_note_pdf, name="credit_note_pdf"),
     path("i/<str:token>.pdf", bill.shared_invoice_pdf, name="shared_invoice_pdf"),
     path("batches/", bill.batch_list, name="batch_list"),

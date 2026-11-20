@@ -2,7 +2,7 @@
 {% load pretty %}
 {% block title %}{{ inv.number }}{% endblock %}
 {% block content %}
-<h1>{{ inv.number }} <small>({{ inv.get_status_display }}{% if inv.is_dispatched %}, dispatched{% endif %})</small></h1>
+<h1>{{ inv.number }} <small>({{ inv.get_status_display }}{% if inv.dispatch_state == "full" %}, dispatched{% elif inv.dispatch_state == "partial" %}, partly dispatched{% endif %})</small></h1>
 <p>{{ inv.buyer_name }} · GSTIN {{ inv.buyer_gstin|default:"unregistered" }} · place of supply {{ inv.place_of_supply_name }} ({{ inv.place_of_supply_code }}) · {{ inv.invoice_date }} · order <a href="{% url 'order_detail' inv.order.pk %}">{{ inv.order.number }}</a></p>
 <div class="scroll"><table>
   <tr><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Taxable</th>{% if inv.intra_state %}<th>CGST</th><th>SGST</th>{% else %}<th>IGST</th>{% endif %}<th>Total</th></tr>
@@ -11,20 +11,34 @@
 </table></div>
 <p>Taxable ₹{{ inv.taxable_total }} · {% if inv.intra_state %}CGST ₹{{ inv.cgst_total }} + SGST ₹{{ inv.sgst_total }}{% else %}IGST ₹{{ inv.igst_total }}{% endif %} · round-off ₹{{ inv.round_off }}<br>
 <strong>Total ₹{{ inv.grand_total }}</strong> · paid ₹{{ inv.paid }} · <strong>outstanding ₹{{ inv.outstanding }}</strong></p>
-{% if shipped %}<p>Dispatched from batches: {% for b, q in shipped %}<strong>{{ b.number }}</strong> ({{ q|floatformat:"-3" }} packets, expires {{ b.expiry_date }}){% if not forloop.last %}; {% endif %}{% endfor %}</p>{% endif %}
+<div class="scroll"><table><caption>Packets by line</caption>
+  <tr><th>Item</th><th>Invoiced</th><th>Dispatched</th><th>Returned</th><th>Credited</th><th>Still to dispatch</th></tr>
+  {% for l, disp, ret, cred, rem, able in line_rows %}<tr><td>{{ l.description }}</td><td>{{ l.qty }}</td><td>{{ disp }}</td><td>{{ ret }}</td><td>{{ cred }}</td><td>{{ rem }}</td></tr>{% endfor %}
+</table></div>
+{% for d, parts in shipped %}<p>Dispatched from batches (lot {{ forloop.counter }}, {{ d.dispatched_at|date:"d M H:i" }}{% if d.vehicle_ref %}, {{ d.vehicle_ref }}{% endif %}): {% for b, q in parts %}<strong>{{ b.number }}</strong> ({{ q|floatformat:"-3" }} packets, expires {{ b.expiry_date }}){% if not forloop.last %}; {% endif %}{% endfor %}</p>{% endfor %}
+{% if credit_notes %}<p>Credit notes: {% for cn in credit_notes %}<a href="{% url 'credit_note_pdf' cn.pk %}" target="_blank">{{ cn.number }}</a> (₹{{ cn.grand_total }}{% if cn.goods_returned %}, goods back in stock{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
 <p><a class="btn small" href="{% url 'invoice_pdf' inv.pk %}" target="_blank">Download PDF</a>
 <a class="btn small" href="{{ wa_link }}" target="_blank" rel="noopener">Share on WhatsApp</a>
 <a class="btn small" href="{{ mail_link }}">Email</a>
 <a class="btn small" href="{% url 'einvoice_json' inv.pk %}">e-Invoice JSON (mock)</a>
 <a class="btn small" href="{% url 'eway_json' inv.pk %}">e-Way Bill JSON (mock)</a>
-{% if inv.status == 'cancelled' %}<a class="btn small" href="{% url 'credit_note_pdf' inv.credit_note.pk %}" target="_blank">Credit note {{ inv.credit_note.number }}</a>{% endif %}</p>
+</p>
 {% if inv.status == 'cancelled' %}<p class="error">Cancelled: {{ inv.credit_note.reason }}</p>{% endif %}
 {% if is_admin and inv.status == 'issued' %}
-{% if not inv.is_dispatched %}
+{% if inv.dispatch_state != "full" %}
 <div class="card"><h2>Dispatch</h2><form method="post" action="{% url 'invoice_dispatch' inv.pk %}">{% csrf_token %}
-  <input name="vehicle_ref" placeholder="Vehicle / LR no. (optional)"><button class="btn" type="submit">Record dispatch (reduces stock)</button></form></div>
+  <input name="vehicle_ref" placeholder="Vehicle / LR no. (optional)">
+  <p><label><input type="radio" name="lot" value="all" checked> Everything still to go</label>
+     <label><input type="radio" name="lot" value="part"> Only part (fill in packets for this lot)</label></p>
+  {% for l, disp, ret, cred, rem, able in line_rows %}{% if rem %}<p>{{ l.description }}: <input type="number" min="0" max="{{ rem }}" name="dispatch_qty_{{ l.pk }}" style="width:6em" placeholder="max {{ rem }}"></p>{% endif %}{% endfor %}
+  <button class="btn" type="submit">Record dispatch (reduces stock)</button></form></div>
 {% endif %}
 <div class="card" style="margin-top:12px"><h2>Payment</h2><a class="btn small" href="{% url 'payment_new' %}?customer={{ inv.customer.pk }}&invoice={{ inv.pk }}">Record payment</a></div>
+<div class="card" style="margin-top:12px"><h2>Partial return or credit</h2><p>Credit only some packets. Tick "back in stock" when they physically return; they go back into the batches they left from.</p>
+<form method="post" action="{% url 'invoice_return' inv.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required>
+  {% for l, disp, ret, cred, rem, able in line_rows %}{% if able %}<p>{{ l.description }}: <input type="number" min="0" max="{{ able }}" name="credit_qty_{{ l.pk }}" style="width:6em" placeholder="max {{ able }}"></p>{% endif %}{% endfor %}
+  <label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, credit only</option></select>
+  <button class="btn" type="submit">Issue credit note</button></form></div>
 <div class="card" style="margin-top:12px"><h2>Cancel invoice</h2><p>Invoices are never deleted; cancelling raises a credit note.</p>
 <form method="post" action="{% url 'invoice_cancel' inv.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required>
 {% if inv.is_dispatched %}<label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, do not add to stock</option></select>{% endif %}

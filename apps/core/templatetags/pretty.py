@@ -7,7 +7,7 @@ register = template.Library()
 ACTIONS = {
     "started": _("started"), "issued": _("issued"), "completed": _("completed"), "voided": _("voided"),
     "submitted": _("submitted"), "approved": _("approved"), "rejected": _("rejected"), "invoiced": _("invoiced"),
-    "dispatched": _("dispatched"), "cancelled": _("cancelled"), "received": _("received"), "added": _("added"),
+    "dispatched": _("dispatched"), "cancelled": _("cancelled"), "credited": _("credited"), "received": _("received"), "added": _("added"),
     "checked_in": _("checked in"),
 }
 KEYS = {

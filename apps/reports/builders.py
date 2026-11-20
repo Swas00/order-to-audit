@@ -71,21 +71,26 @@ def _lines(inv, sign):
                     sign * l.cgst, sign * l.sgst, sign * l.igst) for l in inv.lines.all()]
 
 
+def _credit_lines(cn):
+    return [DocLine(l.invoice_line.sku, l.invoice_line.description, l.invoice_line.hsn_code, l.invoice_line.gst_rate,
+                    -l.qty, -l.taxable_value, -l.cgst, -l.sgst, -l.igst) for l in cn.lines.all()]
+
+
 def sales_docs(d_from, d_to) -> list[SalesDoc]:
     docs = []
-    for inv in Invoice.objects.filter(invoice_date__range=(d_from, d_to)).select_related("customer", "credit_note") \
-            .prefetch_related("lines__sku"):
+    for inv in Invoice.objects.filter(invoice_date__range=(d_from, d_to)).select_related("customer") \
+            .prefetch_related("lines__sku", "credit_notes"):
         remark = f"Cancelled by {inv.credit_note.number}" if inv.status == InvoiceStatus.CANCELLED else ""
         docs.append(SalesDoc("Invoice", 1, inv.invoice_date, inv.number, inv.order.number, inv.customer, inv.buyer_gstin,
                              inv.place_of_supply_code, inv.place_of_supply_name, inv.intra_state, inv.taxable_total,
                              inv.cgst_total, inv.sgst_total, inv.igst_total, inv.round_off, inv.grand_total, remark, _lines(inv, 1)))
     for cn in CreditNote.objects.filter(note_date__range=(d_from, d_to)).select_related("invoice", "invoice__customer") \
-            .prefetch_related("invoice__lines__sku"):
+            .prefetch_related("lines__invoice_line__sku"):
         inv = cn.invoice
         docs.append(SalesDoc("Credit note", -1, cn.note_date, cn.number, inv.number, inv.customer, inv.buyer_gstin,
                              inv.place_of_supply_code, inv.place_of_supply_name, inv.intra_state, -cn.taxable_total,
-                             -cn.cgst_total, -cn.sgst_total, -cn.igst_total, -inv.round_off, -cn.grand_total, cn.reason,
-                             _lines(inv, -1)))
+                             -cn.cgst_total, -cn.sgst_total, -cn.igst_total, -cn.round_off, -cn.grand_total, cn.reason,
+                             _credit_lines(cn)))
     return sorted(docs, key=lambda d: (d.date, d.sign < 0, d.number))  # invoices before credit notes on a day
 
 

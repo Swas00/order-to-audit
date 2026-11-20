@@ -14,7 +14,7 @@ from apps.sales.models import Order
 
 from . import pdf, services
 from .forms import PaymentForm
-from .models import CreditNote, Invoice, Payment
+from .models import CreditNote, Dispatch, Invoice, Payment
 
 READ = (Role.ADMIN, Role.ACCOUNTANT, Role.OWNER)
 
@@ -33,13 +33,14 @@ def invoice_detail(request, pk):
     text = quote(f"Tax invoice {inv.number} from {inv.supplier_name}, total Rs. {inv.grand_total}. PDF: {public}")
     phone = "".join(c for c in inv.customer.phone if c.isdigit())
     shipped = []
-    if inv.is_dispatched:
-        from apps.inventory.models import StockMovement
-        from django.contrib.contenttypes.models import ContentType
-        ct = ContentType.objects.get_for_model(inv.dispatch)
-        shipped = [(m.batch, -m.qty) for m in StockMovement.objects.filter(source_type=ct, source_id=inv.dispatch.pk).select_related("batch")]
+    from apps.inventory.models import StockMovement
+    from django.contrib.contenttypes.models import ContentType
+    ct = ContentType.objects.get_for_model(Dispatch)
+    for d in inv.dispatches.order_by("id"):
+        shipped.append((d, [(m.batch, -m.qty) for m in StockMovement.objects.filter(source_type=ct, source_id=d.pk).select_related("batch")]))
+    lines = [(l, l.dispatched_qty, l.returned_qty, l.credited_qty, l.remaining_to_dispatch, l.creditable_qty) for l in inv.lines.all()]
     return render(request, "billing/invoice_detail.html", {
-        "shipped": shipped, "inv": inv, "history": history(inv), "is_admin": request.user.role == Role.ADMIN,
+        "shipped": shipped, "inv": inv, "line_rows": lines, "credit_notes": inv.credit_notes.order_by("id"), "history": history(inv), "is_admin": request.user.role == Role.ADMIN,
         "wa_link": f"https://wa.me/{phone}?text={text}", "mail_link": f"mailto:?subject={quote('Tax invoice ' + inv.number)}&body={text}"})
 
 
@@ -78,13 +79,26 @@ def invoice_raise(request, order_pk):
     return redirect("invoice_detail", pk=inv.pk)
 
 
+def _quantities(request, prefix):
+    """{invoice line id: qty text} from form fields named <prefix><line id>; blank fields are left out."""
+    out = {}
+    for key, value in request.POST.items():
+        if key.startswith(prefix) and value.strip() != "":
+            try:
+                out[int(key[len(prefix):])] = value.strip()
+            except ValueError:
+                raise Http404
+    return out
+
+
 @roles_required(Role.ADMIN)
 @require_POST
 def invoice_dispatch(request, pk):
     inv = get_object_or_404(Invoice, pk=pk)
     try:
-        services.dispatch_invoice(inv, request.user, request.POST.get("vehicle_ref", ""))
-        messages.success(request, "Dispatched. Finished-goods stock reduced.")
+        lot = _quantities(request, "dispatch_qty_") if request.POST.get("lot") == "part" else None
+        services.dispatch_invoice(inv, request.user, request.POST.get("vehicle_ref", ""), lot)
+        messages.success(request, "Dispatched. Finished-goods stock reduced." + (" Part of the invoice is still to go." if inv.dispatch_state == "partial" else ""))
     except (services.BillingError, StockError) as e:
         messages.error(request, str(e))
     return redirect("invoice_detail", pk=pk)
@@ -98,6 +112,20 @@ def invoice_cancel(request, pk):
     try:
         cn = services.cancel_invoice(inv, request.user, request.POST.get("reason", ""), returned)
         messages.success(request, f"Invoice cancelled by credit note {cn.number}")
+    except (services.BillingError, StockError) as e:
+        messages.error(request, str(e))
+    return redirect("invoice_detail", pk=pk)
+
+
+@roles_required(Role.ADMIN)
+@require_POST
+def invoice_return(request, pk):
+    """Partial credit note: some packets credited, optionally taken back into stock."""
+    inv = get_object_or_404(Invoice, pk=pk)
+    returned = {"yes": True, "no": False}.get(request.POST.get("goods_returned"))
+    try:
+        cn = services.issue_credit_note(inv, request.user, request.POST.get("reason", ""), _quantities(request, "credit_qty_"), returned)
+        messages.success(request, f"Credit note {cn.number} for ₹{cn.grand_total}" + (" (goods back in stock)" if cn.goods_returned else ""))
     except (services.BillingError, StockError) as e:
         messages.error(request, str(e))
     return redirect("invoice_detail", pk=pk)
@@ -181,6 +209,7 @@ def einvoice_json(request, pk):
 @roles_required(*READ)
 def eway_json(request, pk):
     from . import einvoice
-    inv = get_object_or_404(Invoice.objects.select_related("dispatch"), pk=pk)
-    vehicle = inv.dispatch.vehicle_ref if inv.is_dispatched else ""
+    inv = get_object_or_404(Invoice, pk=pk)
+    last = inv.dispatch
+    vehicle = last.vehicle_ref if last else ""
     return _json_download(einvoice.build_eway_bill(inv, vehicle), f"ewaybill-{inv.number.replace('/', '-')}.json")

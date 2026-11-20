@@ -30,8 +30,12 @@ erDiagram
     OrderLine }o--|| Sku : of
     Order ||--o{ Invoice : "billed as"
     Invoice ||--o{ InvoiceLine : has
-    Invoice ||--o| Dispatch : "goods leave"
-    Invoice ||--o| CreditNote : "cancelled by"
+    Invoice ||--o{ Dispatch : "goods leave, in lots"
+    Dispatch ||--o{ DispatchLine : packets
+    InvoiceLine ||--o{ DispatchLine : shipped
+    CreditNote ||--o{ CreditNoteLine : packets
+    InvoiceLine ||--o{ CreditNoteLine : credited
+    Invoice ||--o{ CreditNote : "credited by"
     Customer ||--o{ Payment : pays
     Payment ||--o{ PaymentAllocation : "applied to"
     PaymentAllocation }o--|| Invoice : clears
@@ -57,7 +61,7 @@ erDiagram
 
 **Variance** = (actual − planned) / planned × 100, per item and for yield. **Flagged** when *adverse* (more material, less yield) and *strictly greater* than tolerance (3%, per-SKU override); favourable beyond tolerance is a *note*. Benchmark: yield 188 vs 200 = −6.00% flagged; oil 10.5 vs 10 = +5.00% flagged; cartons 9 vs 10 = −10.00% noted.
 
-**Dispatch is first-expiry-first-out** across non-expired batches, one movement per batch; expired stock is never sold. **Voiding** a run, or cancelling a dispatched invoice, posts exact opposite movements into the same batches; a void is refused if its batch was already sold. **Stock check at approval** shows stock on sale, packets promised to other approved orders, and the shortage. There is no reservation; stock drops at dispatch.
+**Dispatch is first-expiry-first-out** across non-expired batches, one movement per batch; expired stock is never sold. An invoice may ship in several lots. **Voiding** a run, or returning goods on a credit note (partial or full cancellation), posts exact opposite movements into the same batches; a void is refused if its batch was already sold. **Stock check at approval** shows stock on sale, packets promised to other approved orders, and the shortage. There is no reservation; stock drops at dispatch.
 
 ## 4. Costing and valuation
 

@@ -8,5 +8,5 @@
 <div class="scroll"><table><tr><th>Invoice</th><th>Customer</th><th>Packets from this batch</th></tr>
 {% for inv, cust, qty in shipments %}<tr><td>{% if user.role != 'production' %}<a href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a>{% else %}{{ inv.number }}{% endif %}</td><td>{{ cust }}</td><td>{{ qty|floatformat:"-3" }}</td></tr>
 {% empty %}<tr><td colspan="3">Not dispatched yet.</td></tr>{% endfor %}</table></div>
-<p class="muted">Cancelled invoices whose goods were returned still appear here as dispatched; check the invoice status.</p>
+<p class="muted">Packets shown are net of goods returned by credit notes.</p>
 {% endblock %}

@@ -76,7 +76,7 @@ It performs section 5 steps 1-8 through the same service layer the screens use, 
 .venv/bin/python -m pytest -q
 ```
 
-259 tests, about 2.5 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
+293 tests, about 2.5 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
 
 ---
 
@@ -209,7 +209,7 @@ Where the brief was silent I chose, and wrote it down. Invented values are marke
 - Approving an order does not move stock; **dispatch** does. Coverage at approval counts only packets not already promised to other approved orders. An order cannot be approved above available stock; the admin can approve the available quantity (partial approval) or reject.
 - A salesman can only order for customers assigned to them.
 - Invoice numbers are `INV/<financial year>/<4 digits>` (financial year April-March), gap-free per year. Credit notes use `CN/...`. Totals are rounded to the nearest rupee with a round-off line.
-- Cancelling an invoice is a **full** credit note. A payment made before cancellation stays on the customer's account as credit.
+- An invoice can be **dispatched in several lots** (partial dispatch; the order shows *invoiced* until every packet has gone, then *dispatched*) and **credited in part** (a partial return): a credit note names the packets, restocks them if they physically come back (into the batches they left from, at the cost they left at) and reduces what the customer owes. Cancelling an invoice credits whatever has not yet been credited; when every packet is credited the invoice becomes *cancelled* and its order returns to *approved*. The credit notes of one invoice always add up to the invoice to the paisa. A payment made before cancellation stays on the customer's account as credit.
 - Payments can be applied to one invoice (never above what is owed) or, if no invoice is chosen, clear the oldest invoices first with any remainder kept as an advance.
 - Ageing runs from the **invoice date** (no credit terms are given). "Customer-wise sales" means approved orders, before GST.
 - GSTINs, the HSN code `19059030`, pincodes, phone numbers and shop coordinates are **invented** dummy values in the right format. The 5% GST rate is the brief's. The HSN code is a placeholder and has not been checked against the official schedule.
@@ -237,7 +237,7 @@ Stated plainly, so nothing here is a surprise.
 
 **Missing or simplified**
 - **No login throttling**, and the demo users share one public password.
-- Partial dispatch, partial credit notes and goods returns outside a full cancellation are not built (the brief marks them optional).
+- Returns are credit-led: a credit note can restock packets, but there is no replacement-goods flow, and a credit note reduces quantity only (no price-difference credit note).
 - Only weighted-average costing is implemented (FIFO and last-price are discussed above, not built).
 - Batches and expiry apply to finished goods only, not raw materials. Dispatch cost uses the SKU's average cost, not the specific batch's cost.
 - Master data is edited in Django's admin site, not custom screens.
@@ -255,7 +255,7 @@ Stated plainly, so nothing here is a surprise.
 
 ## 7. How it is tested
 
-259 automated tests, all executed (results are what you get when you run the command above):
+293 automated tests, all executed (results are what you get when you run the command above):
 
 - **Stock and tax maths:** unit conversion, ledger balances, weighted-average cost, FEFO allocation, GST per line, round-off, financial-year boundaries, amount in words.
 - **The benchmark:** every row of the section 5 results table, plus a test that adding a 500 g pack size does not disturb it.

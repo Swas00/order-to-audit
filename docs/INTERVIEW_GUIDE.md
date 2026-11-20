@@ -29,7 +29,7 @@ If you can explain those three lines and draw the ER diagram in [DESIGN.md](DESI
 | Order approval and stock check | `apps/sales/services.py` : `coverage`, `approve_order` |
 | Offline submit endpoint | `apps/sales/api.py` : `submit_order`; browser side `apps/sales/static/sales/offline.js` |
 | GST maths | `apps/billing/tax.py` : `line_tax`, `round_to_rupee`, `financial_year` |
-| Invoice, dispatch, cancel, payment | `apps/billing/services.py` : `raise_invoice`, `dispatch_invoice`, `cancel_invoice`, `record_payment` |
+| Invoice, dispatch (in lots), credit notes and returns, payment | `apps/billing/services.py` : `raise_invoice`, `dispatch_invoice`, `issue_credit_note`, `cancel_invoice`, `record_payment` |
 | Cost per packet | `apps/costing/services.py` : `run_cost`, `allocate`, `sku_costs` |
 | Reports | `apps/reports/builders.py` (one function per report), `apps/reports/views.py` (registry) |
 | Who may do what | `apps/accounts/permissions.py` : `roles_required` (used on every view) |
@@ -83,13 +83,15 @@ After any change run: `.venv/bin/python -m pytest -q apps/production apps/billin
 
 **What happens if a run was entered wrongly?** The admin voids it: exact opposite movements are posted into the same batches and the run keeps its history. If the batch has already been sold, the void is refused rather than leaving the ledger inconsistent.
 
-**What happens when an invoice is wrong?** It is never edited. Cancel it with a credit note; the order returns to *approved* and a corrected invoice can be raised. Goods that came back return to their original batches at the cost they left at.
+**What happens when an invoice is wrong?** It is never edited. Cancel it with a credit note; the order returns to *approved* and a corrected invoice can be raised. Goods that came back return to their original batches at the cost they left at. For only some packets use a partial credit note (`issue_credit_note` with quantities): the invoice stays open for the rest, and when the last packet is credited the credit notes add up to the invoice exactly.
+
+**Can an invoice ship in parts?** Yes: `dispatch_invoice` takes quantities per line; each lot is its own `Dispatch` with `DispatchLine` rows and its own ledger movements. Packets still to go = invoiced − credited − (dispatched − returned) (`InvoiceLine.remaining_to_dispatch`). Approval stock checks subtract only the packets not yet shipped, so shipped packets are never counted twice.
 
 **How does offline ordering avoid duplicates?** The page generates a unique id per order; the server treats it as an idempotency key, so a retry returns the same order. The queue is written to the phone *before* sending, so nothing is lost if the connection drops.
 
 **What are the weak spots?** Be upfront (they are listed in the README): Docker/PostgreSQL never run, no login throttling, master data edited in Django admin, FG stock valued at material cost only, Tamil text needs native review, offline only for order entry and only while the app is open.
 
-**What would you build next?** Split BOM into recipe + packing spec (true shared recipes); costing layers (FIFO) and COGS that include overheads; partial dispatch and partial credit notes; a PostgreSQL concurrency test; per-user language; Tamil names for master data.
+**What would you build next?** Split BOM into recipe + packing spec (true shared recipes); costing layers (FIFO) and COGS that include overheads; price-difference credit notes and a replacement-goods flow; a PostgreSQL concurrency test; per-user language; Tamil names for master data.
 
 ## 5. Running the walkthrough
 

@@ -15,7 +15,7 @@ from apps.masters.models import CompanyProfile, Customer
 from apps.sales.models import Order, OrderStatus
 
 from . import tax
-from .models import (money_sum, CreditNote, Dispatch, DocKind, DocSequence, Invoice, InvoiceLine, InvoiceStatus, Payment,
+from .models import (money_sum, CreditNote, CreditNoteLine, Dispatch, DispatchLine, DocKind, DocSequence, Invoice, InvoiceLine, InvoiceStatus, Payment,
                      PaymentAllocation)
 
 ZERO = Decimal("0.00")
@@ -70,52 +70,145 @@ def raise_invoice(order: Order, user, invoice_date: date | None = None) -> Invoi
     return inv
 
 
+def _whole_qty(value, what):
+    try:
+        n = int(value)
+    except (TypeError, ValueError):
+        raise BillingError(f"{what}: quantity must be a whole number of packets")
+    if n < 0:
+        raise BillingError(f"{what}: quantity cannot be negative")
+    return n
+
+
+def _chosen(invoice, quantities, limit_of, none_means_all_msg):
+    """Validate {invoice line id: qty}. None means 'everything still possible'. Returns [(line, qty)] with qty > 0."""
+    lines = list(invoice.lines.select_related("sku"))
+    if quantities is None:
+        picked = [(l, limit_of(l)) for l in lines]
+    else:
+        by_id = {l.pk: l for l in lines}
+        picked = []
+        for line_id, raw in quantities.items():
+            if line_id not in by_id:
+                raise BillingError("That line does not belong to this invoice")
+            l = by_id[line_id]
+            n = _whole_qty(raw, str(l.sku))
+            if n > limit_of(l):
+                raise BillingError(f"{l.sku}: only {limit_of(l)} packets available for this, you asked for {n}")
+            picked.append((l, n))
+    picked = [(l, n) for l, n in picked if n > 0]
+    if not picked:
+        raise BillingError(none_means_all_msg)
+    return picked
+
+
 @transaction.atomic
-def dispatch_invoice(invoice: Invoice, user, vehicle_ref="") -> Dispatch:
-    """Goods leave: finished-goods stock goes down by each invoiced quantity at average cost."""
+def dispatch_invoice(invoice: Invoice, user, vehicle_ref="", quantities: dict | None = None) -> Dispatch:
+    """Goods leave: finished-goods stock goes down (first-expiry-first-out). `quantities` maps invoice line id to
+    packets sent in this lot (a partial dispatch); None sends everything still outstanding. An invoice can be
+    dispatched in several lots until every line is complete."""
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     if invoice.status != InvoiceStatus.ISSUED:
         raise BillingError("A cancelled invoice cannot be dispatched")
-    if Dispatch.objects.filter(invoice=invoice).exists():
-        raise BillingError(f"{invoice.number} has already been dispatched")
+    picked = _chosen(invoice, quantities, lambda l: l.remaining_to_dispatch,
+                     f"{invoice.number} has already been dispatched in full" if invoice.is_dispatched
+                     else "Enter a quantity to dispatch")
     d = Dispatch.objects.create(invoice=invoice, user=user, vehicle_ref=vehicle_ref)
-    for line in invoice.lines.select_related("sku"):
-        stock.issue_fefo(line.sku, line.qty, d, MovementType.DISPATCH, note=invoice.number)  # earliest expiry first; raises if short
-    Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.DISPATCHED)
-    record(user, invoice, "dispatched", vehicle=vehicle_ref)
-    record(user, invoice.order, "dispatched", invoice=invoice.number)
+    for line, qty in picked:
+        DispatchLine.objects.create(dispatch=d, invoice_line=line, qty=qty)
+        stock.issue_fefo(line.sku, qty, d, MovementType.DISPATCH, note=invoice.number)  # raises if short, rolling everything back
+    complete = invoice.dispatch_state == "full"
+    Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.DISPATCHED if complete else OrderStatus.INVOICED)
+    detail = {"vehicle": vehicle_ref, "lot": {str(l.sku.code): q for l, q in picked}, "complete": complete}
+    record(user, invoice, "dispatched", **detail)
+    record(user, invoice.order, "dispatched", invoice=invoice.number, complete=complete)
     return d
 
 
+def _return_to_stock(invoice, line, qty, cn):
+    """Put `qty` packets of `line` back into the batches they left from, at the cost they left at."""
+    d_ct, c_ct = ContentType.objects.get_for_model(Dispatch), ContentType.objects.get_for_model(CreditNote)
+    outs = StockMovement.objects.filter(source_type=d_ct, source_id__in=invoice.dispatches.values("pk"), sku=line.sku).order_by("id")
+    back = {}
+    for m in StockMovement.objects.filter(source_type=c_ct, source_id__in=invoice.credit_notes.exclude(pk=cn.pk).values("pk"),
+                                          sku=line.sku, movement_type=MovementType.RETURN):
+        back[m.batch_id] = back.get(m.batch_id, 0) + m.qty
+    need = Decimal(qty)
+    for out in outs:
+        used = min(back.get(out.batch_id, Decimal("0")), -out.qty)
+        back[out.batch_id] = back.get(out.batch_id, Decimal("0")) - used
+        take = min(need, -out.qty - used)
+        if take > 0:
+            stock.receive(line.sku, take, out.unit_cost, cn, MovementType.RETURN, note=f"{cn.number} / {invoice.number}", batch=out.batch)
+            need -= take
+        if need <= 0:
+            return
+    if need > 0:
+        raise BillingError("More goods returned than were dispatched")
+
+
 @transaction.atomic
-def cancel_invoice(invoice: Invoice, user, reason: str, goods_returned: bool | None = None) -> CreditNote:
-    """Cancel by credit note (the invoice is kept). If it was dispatched and the goods come back,
-    stock is restored at the cost they left at. The order returns to 'approved' so it can be re-invoiced."""
+def issue_credit_note(invoice: Invoice, user, reason: str, quantities: dict | None = None,
+                      goods_returned: bool | None = None) -> CreditNote:
+    """Credit part or all of an invoice. `quantities` maps invoice line id to packets credited; None credits everything
+    not yet credited (a full cancellation). If goods are returned, they go back into the batches they left from.
+    When every packet has been credited the invoice becomes cancelled and its order returns to 'approved'.
+    The invoice itself is never edited or deleted."""
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     if invoice.status == InvoiceStatus.CANCELLED:
         raise BillingError(f"{invoice.number} is already cancelled")
     if not reason.strip():
         raise BillingError("A reason is required")
-    dispatched = Dispatch.objects.filter(invoice=invoice).first()
+    picked = _chosen(invoice, quantities, lambda l: l.creditable_qty, "Enter a quantity to credit")
     if goods_returned is None:
-        goods_returned = dispatched is not None
-    if goods_returned and not dispatched:
+        goods_returned = any(l.returnable_qty > 0 for l, _ in picked)
+    returned = {l.pk: min(q, l.returnable_qty) if goods_returned else 0 for l, q in picked}
+    if goods_returned and not any(returned.values()):
         raise BillingError("Nothing was dispatched, so there are no goods to return")
+
+    lines_tax = []
+    for l, q in picked:
+        if q == l.creditable_qty:  # last credit on this line: take exactly what is left so the pieces add up to the invoice
+            prev = l.credit_lines.aggregate(t=Sum("taxable_value"), c=Sum("cgst"), s=Sum("sgst"), i=Sum("igst"))
+            t = tax.LineTax(l.taxable_value - money_sum(prev["t"]), l.cgst - money_sum(prev["c"]),
+                            l.sgst - money_sum(prev["s"]), l.igst - money_sum(prev["i"]))
+        else:
+            t = tax.line_tax(q, l.rate, l.gst_rate, invoice.intra_state)
+        lines_tax.append((l, q, t))
+    taxable, cgst, sgst, igst = (sum((getattr(t, f) for *_, t in lines_tax), ZERO) for f in ("taxable", "cgst", "sgst", "igst"))
+    chosen = {l.pk: q for l, q in picked}
+    finishes = all(l.creditable_qty == chosen.get(l.pk, 0) for l in invoice.lines.all())
+    if finishes:  # credit notes together equal the invoice to the paisa, round-off included
+        grand = invoice.grand_total - invoice.credited_total
+        round_off = grand - (taxable + cgst + sgst + igst)
+    else:
+        grand, round_off = tax.round_to_rupee(taxable + cgst + sgst + igst)
+
     number, _ = next_number(DocKind.CREDIT_NOTE, timezone.localdate())
     cn = CreditNote.objects.create(
-        number=number, invoice=invoice, reason=reason.strip(), goods_returned=goods_returned,
-        taxable_total=invoice.taxable_total, cgst_total=invoice.cgst_total, sgst_total=invoice.sgst_total,
-        igst_total=invoice.igst_total, grand_total=invoice.grand_total, created_by=user)
-    if dispatched and goods_returned:
-        ct = ContentType.objects.get_for_model(dispatched)
-        for out in StockMovement.objects.filter(source_type=ct, source_id=dispatched.pk, sku__isnull=False).select_related("sku", "batch"):
-            # goods go back into the batch they left from, at the cost they left at
-            stock.receive(out.sku, -out.qty, out.unit_cost, cn, MovementType.RETURN, note=f"{number} / {invoice.number}", batch=out.batch)
-    invoice.status = InvoiceStatus.CANCELLED
-    invoice.save()
-    Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.APPROVED)
-    record(user, invoice, "cancelled", credit_note=number, reason=reason.strip(), goods_returned=goods_returned)
+        number=number, invoice=invoice, reason=reason.strip(), goods_returned=any(returned.values()),
+        taxable_total=taxable, cgst_total=cgst, sgst_total=sgst, igst_total=igst, round_off=round_off,
+        grand_total=grand, created_by=user)
+    for l, q, t in lines_tax:
+        CreditNoteLine.objects.create(credit_note=cn, invoice_line=l, qty=q, qty_returned=returned[l.pk],
+                                      taxable_value=t.taxable, cgst=t.cgst, sgst=t.sgst, igst=t.igst)
+        if returned[l.pk]:
+            _return_to_stock(invoice, l, returned[l.pk], cn)
+    if finishes:
+        invoice.status = InvoiceStatus.CANCELLED
+        invoice.save()
+        Order.objects.filter(pk=invoice.order_id).update(status=OrderStatus.APPROVED)
+    else:
+        Order.objects.filter(pk=invoice.order_id).update(
+            status=OrderStatus.DISPATCHED if invoice.dispatch_state == "full" else OrderStatus.INVOICED)
+    record(user, invoice, "cancelled" if finishes else "credited", credit_note=number, reason=reason.strip(),
+           goods_returned=cn.goods_returned, lot={str(l.sku.code): q for l, q in picked})
     return cn
+
+
+def cancel_invoice(invoice: Invoice, user, reason: str, goods_returned: bool | None = None) -> CreditNote:
+    """Cancel everything still uncredited with a credit note. Goods that left and come back are restocked."""
+    return issue_credit_note(invoice, user, reason, None, goods_returned)
 
 
 # ---------- payments and receivables ----------
@@ -157,8 +250,10 @@ def record_payment(customer: Customer, amount, user, invoice: Invoice | None = N
 
 
 def customer_balance(customer: Customer) -> Decimal:
-    """Invoiced (not cancelled) minus everything received. Negative = customer is in credit."""
-    billed = money_sum(customer.invoices.filter(status=InvoiceStatus.ISSUED).aggregate(t=Sum("grand_total"))["t"])
+    """Invoiced (not cancelled) less credit notes, minus everything received. Negative = customer is in credit."""
+    issued = customer.invoices.filter(status=InvoiceStatus.ISSUED)
+    billed = money_sum(issued.aggregate(t=Sum("grand_total"))["t"]) - money_sum(
+        CreditNote.objects.filter(invoice__in=issued).aggregate(t=Sum("grand_total"))["t"])
     received = money_sum(customer.payments.aggregate(t=Sum("amount"))["t"])
     return billed - received
 
@@ -187,11 +282,15 @@ def ageing(as_of: date | None = None):
 
 
 def batch_trace(batch):
-    """Where did this batch go? [(invoice, customer, packets)] from dispatch movements. Used for recalls."""
-    from apps.inventory.models import StockMovement
-    ct = ContentType.objects.get_for_model(Dispatch)
+    """Where did this batch go? [(invoice, customer, packets)] from dispatch movements, net of goods returned. Used for recalls."""
+    d_ct, c_ct = ContentType.objects.get_for_model(Dispatch), ContentType.objects.get_for_model(CreditNote)
     out = {}
-    for m in StockMovement.objects.filter(batch=batch, source_type=ct, movement_type=MovementType.DISPATCH):
+    for m in StockMovement.objects.filter(batch=batch, source_type=d_ct, movement_type=MovementType.DISPATCH):
         d = Dispatch.objects.select_related("invoice", "invoice__customer").get(pk=m.source_id)
         out[d.invoice_id] = (d.invoice, d.invoice.customer, out.get(d.invoice_id, (None, None, 0))[2] - m.qty)
-    return list(out.values())
+    for m in StockMovement.objects.filter(batch=batch, source_type=c_ct, movement_type=MovementType.RETURN):
+        inv_id = CreditNote.objects.get(pk=m.source_id).invoice_id
+        if inv_id in out:
+            inv, cust, q = out[inv_id]
+            out[inv_id] = (inv, cust, q - m.qty)
+    return [r for r in out.values() if r[2] > 0]

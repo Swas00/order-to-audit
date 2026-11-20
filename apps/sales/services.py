@@ -59,11 +59,16 @@ def create_order(salesman, customer: Customer, quantities: dict, client_uuid=Non
 
 
 def committed_qty(sku: Sku, exclude_order=None) -> int:
-    """Packets on approved/invoiced orders that have not been dispatched yet."""
+    """Packets on approved/invoiced orders that have not been dispatched yet (net of lots already sent)."""
+    from apps.billing.models import DispatchLine, InvoiceStatus  # local import: billing depends on sales
     qs = OrderLine.objects.filter(sku=sku, order__status__in=COMMITTED)
+    shipped = DispatchLine.objects.filter(invoice_line__sku=sku, invoice_line__invoice__order__status__in=COMMITTED,
+                                          invoice_line__invoice__status=InvoiceStatus.ISSUED)
     if exclude_order is not None:
         qs = qs.exclude(order=exclude_order)
-    return qs.aggregate(t=Sum("qty"))["t"] or 0
+        shipped = shipped.exclude(invoice_line__invoice__order=exclude_order)
+    # part-dispatched invoices: the packets that already left are no longer promised, they are out of stock
+    return max((qs.aggregate(t=Sum("qty"))["t"] or 0) - (shipped.aggregate(t=Sum("qty"))["t"] or 0), 0)
 
 
 @dataclass

@@ -82,7 +82,7 @@ def build_tally_xml(invoices, credit_notes, payments, company_name) -> bytes:
     for cn in credit_notes:
         inv = cn.invoice
         _sales_like(msg, "Credit Note", cn.number, cn.note_date, inv.buyer_name, f"Against {inv.number}: {cn.reason}",
-                    cn.taxable_total, cn.cgst_total, cn.sgst_total, cn.igst_total, inv.round_off, cn.grand_total, False)
+                    cn.taxable_total, cn.cgst_total, cn.sgst_total, cn.igst_total, cn.round_off, cn.grand_total, False)
     for p in payments:
         v = _voucher(msg, "Receipt", f"RCPT-{p.pk:05d}", p.paid_on, p.customer.name, f"{p.get_mode_display()} {p.reference}".strip())
         _entry(v, LEDGER_FOR_MODE[p.mode], p.amount, debit=True)

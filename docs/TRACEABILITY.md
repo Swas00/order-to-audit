@@ -45,7 +45,7 @@ All eleven are asserted in `apps/core/tests.py::test_section_5_results_table` an
 | R-10 | Stock coverage shown before approval | coverage table | `sales/tests.py::test_benchmark_distributor_b_shortage_of_32` and others | Done |
 | R-11 | GST invoice: GSTIN, HSN, taxable value, CGST/SGST or IGST, FY numbering | `apps/billing` | `billing/tests.py` (tax maths, FY boundary, sequence restart, snapshot, DB constraint) | Done |
 | R-12 | PDF, shareable by WhatsApp link or email | PDF + WhatsApp/email buttons + unlisted token link | `billing/tests.py::test_invoice_pdf_is_a_valid_pdf`, `test_shared_pdf_link_needs_the_token_not_a_login`; PDF text read back and checked; **PDF layout not eyeballed** | Done, partly verified |
-| R-13 | Dispatch reduces finished-goods stock | `dispatch_invoice` | `billing/tests.py` (benchmark 238 → 88, refuses if short, atomic) | Done |
+| R-13 | Dispatch reduces finished-goods stock; partial dispatch and returns (optional) | `dispatch_invoice` (lots), `issue_credit_note` (partial returns) | `billing/tests.py` (benchmark 238 → 88, refuses if short, atomic); `billing/test_partial.py` (lots, FEFO per lot, over-dispatch, partial and final credit notes add up exactly, restock to original batches, reports, Tally, screens, roles, upgrade of old data) | Done |
 | R-14 | Payments against invoices; outstanding per customer | `/payments/`, `/receivables/` | `billing/tests.py` (benchmark ₹3,875, overpay refused, oldest-first, advance) | Done |
 
 ## D. BOM and production (section 4.3), the most heavily weighted module
@@ -109,7 +109,7 @@ Each report has a date range and exports to CSV, Excel and PDF. `reports/tests.p
 | T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **No hosted demo. Docker Compose is written but has never been run** |
 | T-07 | Tally not required for daily work | Done | Tally is an optional export only |
 | T-08 | Stack justification in the README | Done | README section 2 |
-| T-09 | Tests for stock and tax maths | Done | see sections C-E; 259 tests in total |
+| T-09 | Tests for stock and tax maths | Done | see sections C-E; 293 tests in total |
 | T-10 | Only dummy and invented data | Done | all GSTINs, names, addresses and coordinates are invented and marked so in the README |
 
 Security and robustness (not a numbered requirement, but you asked for it): route-by-route login and role tests, CSRF, escaping, hostile and oversized input, and `pip-audit` (clean when run). Defects found and fixed this way include server errors on non-numeric ids and database overflow on huge numbers (`core/test_security.py`).
