@@ -100,6 +100,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+WHITENOISE_USE_FINDERS = True  # icons and offline.js are served even if collectstatic was not run
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---- hardening (production-style runs: DEBUG=0). Set HTTPS=1 when served over TLS. ----

@@ -361,3 +361,10 @@ def test_migration_backfills_lines_for_existing_dispatches_and_credit_notes():
     cl = new.get_model("billing", "CreditNoteLine").objects.get()
     assert (dl.qty, dl.invoice_line_id) == (2, il.pk)
     assert (cl.qty, cl.qty_returned, cl.taxable_value, cl.cgst) == (2, 2, 100, D("2.50"))
+
+
+def test_typed_quantity_wins_over_the_everything_option(admin_client):
+    """A quantity typed with the 'everything' radio still selected must ship only what was typed."""
+    inv = retailer_a_invoice()
+    admin_client.post(reverse("invoice_dispatch", args=[inv.pk]), {"lot": "all", f"dispatch_qty_{line(inv).pk}": "25"})
+    assert stock.balance(FG()) == D("213") and Invoice.objects.get(pk=inv.pk).dispatch_state == "partial"

@@ -109,10 +109,10 @@ Each report has a date range and exports to CSV, Excel and PDF. `reports/tests.p
 | T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **No hosted demo. Docker Compose is written but has never been run** |
 | T-07 | Tally not required for daily work | Done | Tally is an optional export only |
 | T-08 | Stack justification in the README | Done | README section 2 |
-| T-09 | Tests for stock and tax maths | Done | see sections C-E; 293 tests in total |
+| T-09 | Tests for stock and tax maths | Done | see sections C-E; 306 tests in total |
 | T-10 | Only dummy and invented data | Done | all GSTINs, names, addresses and coordinates are invented and marked so in the README |
 
-Security and robustness (not a numbered requirement, but you asked for it): route-by-route login and role tests, CSRF, escaping, hostile and oversized input, and `pip-audit` (clean when run). Defects found and fixed this way include server errors on non-numeric ids and database overflow on huge numbers (`core/test_security.py`).
+Security and robustness (not a numbered requirement, but you asked for it): route-by-route login and role tests, CSRF, escaping, hostile and oversized input, and `pip-audit` (clean when run). `core/test_crawl.py` logs in as every role on a populated database, follows every link and fails on any that errors for that role (this found the production role being shown links to pages it may not open), and opens every Django admin page. Defects found and fixed this way include server errors on non-numeric ids and database overflow on huge numbers (`core/test_security.py`).
 
 ## I. Deliverables (section 8)
 

@@ -89,7 +89,7 @@ After any change run: `.venv/bin/python -m pytest -q apps/production apps/billin
 
 **How does offline ordering avoid duplicates?** The page generates a unique id per order; the server treats it as an idempotency key, so a retry returns the same order. The queue is written to the phone *before* sending, so nothing is lost if the connection drops.
 
-**What are the weak spots?** Be upfront (they are listed in the README): Docker/PostgreSQL never run, no login throttling, master data edited in Django admin, FG stock valued at material cost only, Tamil text needs native review, offline only for order entry and only while the app is open.
+**What are the weak spots?** Be upfront (they are listed in the README): Docker/PostgreSQL never run, login throttling is per process only, master data edited in Django admin, FG stock valued at material cost only, Tamil text needs native review, offline only for order entry and only while the app is open.
 
 **What would you build next?** Split BOM into recipe + packing spec (true shared recipes); costing layers (FIFO) and COGS that include overheads; price-difference credit notes and a replacement-goods flow; a PostgreSQL concurrency test; per-user language; Tamil names for master data.
 

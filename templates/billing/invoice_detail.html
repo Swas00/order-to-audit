@@ -28,15 +28,15 @@
 {% if inv.dispatch_state != "full" %}
 <div class="card"><h2>Dispatch</h2><form method="post" action="{% url 'invoice_dispatch' inv.pk %}">{% csrf_token %}
   <input name="vehicle_ref" placeholder="Vehicle / LR no. (optional)">
-  <p><label><input type="radio" name="lot" value="all" checked> Everything still to go</label>
-     <label><input type="radio" name="lot" value="part"> Only part (fill in packets for this lot)</label></p>
-  {% for l, disp, ret, cred, rem, able in line_rows %}{% if rem %}<p>{{ l.description }}: <input type="number" min="0" max="{{ rem }}" name="dispatch_qty_{{ l.pk }}" style="width:6em" placeholder="max {{ rem }}"></p>{% endif %}{% endfor %}
+  <p><label class="opt"><input type="radio" name="lot" value="all" checked> Everything still to go</label>
+     <label class="opt"><input type="radio" name="lot" value="part"> Only part (fill in packets for this lot)</label></p>
+  {% for l, disp, ret, cred, rem, able in line_rows %}{% if rem %}<p>{{ l.description }}: <input type="number" min="0" max="{{ rem }}" name="dispatch_qty_{{ l.pk }}" class="qty" placeholder="max {{ rem }}"></p>{% endif %}{% endfor %}
   <button class="btn" type="submit">Record dispatch (reduces stock)</button></form></div>
 {% endif %}
 <div class="card" style="margin-top:12px"><h2>Payment</h2><a class="btn small" href="{% url 'payment_new' %}?customer={{ inv.customer.pk }}&invoice={{ inv.pk }}">Record payment</a></div>
-<div class="card" style="margin-top:12px"><h2>Partial return or credit</h2><p>Credit only some packets. Tick "back in stock" when they physically return; they go back into the batches they left from.</p>
+<div class="card" style="margin-top:12px"><h2>Partial return or credit</h2><p>Credit only some packets. Choose "Yes" below when they physically return; they go back into the batches they left from.</p>
 <form method="post" action="{% url 'invoice_return' inv.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required>
-  {% for l, disp, ret, cred, rem, able in line_rows %}{% if able %}<p>{{ l.description }}: <input type="number" min="0" max="{{ able }}" name="credit_qty_{{ l.pk }}" style="width:6em" placeholder="max {{ able }}"></p>{% endif %}{% endfor %}
+  {% for l, disp, ret, cred, rem, able in line_rows %}{% if able %}<p>{{ l.description }}: <input type="number" min="0" max="{{ able }}" name="credit_qty_{{ l.pk }}" class="qty" placeholder="max {{ able }}"></p>{% endif %}{% endfor %}
   <label>Goods returned to the factory?</label><select name="goods_returned"><option value="yes">Yes, add back to stock</option><option value="no">No, credit only</option></select>
   <button class="btn" type="submit">Issue credit note</button></form></div>
 <div class="card" style="margin-top:12px"><h2>Cancel invoice</h2><p>Invoices are never deleted; cancelling raises a credit note.</p>

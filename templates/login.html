@@ -5,7 +5,7 @@
 <div class="card">
   <h1>{% trans "Log in" %}</h1>
   <form method="post">{% csrf_token %}
-    {% if form.errors %}<p class="error">{% trans "Wrong username or password." %}</p>{% endif %}
+    {% if locked %}<p class="error">{% trans "Too many failed attempts. Try again in 15 minutes." %}</p>{% elif form.errors %}<p class="error">{% trans "Wrong username or password." %}</p>{% endif %}
     <label for="id_username">{% trans "Username" %}</label>
     <input id="id_username" name="username" autocomplete="username" autocapitalize="none" required>
     <label for="id_password">{% trans "Password" %}</label>

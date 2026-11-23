@@ -748,3 +748,12 @@ msgstr "வரி %(n)s"
 
 msgid "Save purchase"
 msgstr "கொள்முதலைச் சேமி"
+
+msgid "Change password"
+msgstr "கடவுச்சொல்லை மாற்று"
+
+msgid "Save new password"
+msgstr "புதிய கடவுச்சொல்லைச் சேமி"
+
+msgid "Too many failed attempts. Try again in 15 minutes."
+msgstr "தவறான முயற்சிகள் அதிகம். 15 நிமிடங்களுக்குப் பிறகு முயலவும்."

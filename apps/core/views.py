@@ -15,3 +15,14 @@ def service_worker(request):
 
 def manifest(request):
     return HttpResponse((PWA / "manifest.webmanifest").read_text(), content_type="application/manifest+json")
+
+
+def health(request):
+    """Liveness and database check for hosting platforms: 200 'ok' when the database answers."""
+    from django.db import connection
+    try:
+        with connection.cursor() as cur:
+            cur.execute("SELECT 1")
+    except Exception:
+        return HttpResponse("database unavailable", status=503, content_type="text/plain")
+    return HttpResponse("ok", content_type="text/plain")

@@ -16,12 +16,14 @@ from apps.sales import views as sales
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("i18n/", include("django.conf.urls.i18n")),  # POST /i18n/setlang/ switches language (cookie)
-    path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
+    path("login/", account_views.ThrottledLoginView.as_view(), name="login"),
+    path("password/", auth_views.PasswordChangeView.as_view(template_name="password.html", success_url="/"), name="password_change"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("", account_views.home, name="home"),
     path("stock/", inv.stock_summary, name="stock_summary"),
     path("stock/ledger/", inv.stock_ledger, name="stock_ledger"),
     path("stock/adjust/", inv.adjust, name="stock_adjust"),
+    path("health/", core_views.health, name="health"),
     path("sw.js", core_views.service_worker, name="service_worker"),
     path("manifest.webmanifest", core_views.manifest, name="manifest"),
     path("orders/api/submit/", sales_api.submit_order, name="order_api_submit"),

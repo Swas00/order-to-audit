@@ -96,7 +96,9 @@ def _quantities(request, prefix):
 def invoice_dispatch(request, pk):
     inv = get_object_or_404(Invoice, pk=pk)
     try:
-        lot = _quantities(request, "dispatch_qty_") if request.POST.get("lot") == "part" else None
+        typed = _quantities(request, "dispatch_qty_")
+        # quantities typed in => a partial lot, even if the "everything" radio was left selected (never ship more than typed)
+        lot = typed if (request.POST.get("lot") == "part" or typed) else None
         services.dispatch_invoice(inv, request.user, request.POST.get("vehicle_ref", ""), lot)
         messages.success(request, "Dispatched. Finished-goods stock reduced." + (" Part of the invoice is still to go." if inv.dispatch_state == "partial" else ""))
     except (services.BillingError, StockError) as e:

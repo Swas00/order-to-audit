@@ -76,7 +76,7 @@ It performs section 5 steps 1-8 through the same service layer the screens use, 
 .venv/bin/python -m pytest -q
 ```
 
-293 tests, about 2.5 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
+306 tests, about 2.5 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
 
 ---
 
@@ -236,7 +236,7 @@ Stated plainly, so nothing here is a surprise.
 - The browser location prompt for GPS check-in was not tried on a real phone. iOS Safari was not tried at all.
 
 **Missing or simplified**
-- **No login throttling**, and the demo users share one public password.
+- Login is throttled (5 wrong passwords per username and address lock it for 15 minutes), but the counter lives in the process cache, so with several worker processes the limit applies per process. The demo users share one public password (users can change theirs at `/password/`).
 - Returns are credit-led: a credit note can restock packets, but there is no replacement-goods flow, and a credit note reduces quantity only (no price-difference credit note).
 - Only weighted-average costing is implemented (FIFO and last-price are discussed above, not built).
 - Batches and expiry apply to finished goods only, not raw materials. Dispatch cost uses the SKU's average cost, not the specific batch's cost.
@@ -255,7 +255,7 @@ Stated plainly, so nothing here is a surprise.
 
 ## 7. How it is tested
 
-293 automated tests, all executed (results are what you get when you run the command above):
+306 automated tests, all executed (results are what you get when you run the command above):
 
 - **Stock and tax maths:** unit conversion, ledger balances, weighted-average cost, FEFO allocation, GST per line, round-off, financial-year boundaries, amount in words.
 - **The benchmark:** every row of the section 5 results table, plus a test that adding a 500 g pack size does not disturb it.

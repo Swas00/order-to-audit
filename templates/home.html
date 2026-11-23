@@ -12,7 +12,7 @@
   <li><a href="{% url 'order_list' %}">{% trans "My orders and status" %}</a></li>
   <li><a href="{% url 'visit_new' %}">{% trans "Check in at a customer" %}</a> · <a href="{% url 'visit_list' %}">{% trans "My visits" %}</a></li>
   <li><a href="{% url 'customer_sales' %}">{% trans "My customer-wise sales" %}</a></li>
-</ul></div>{% else %}
+</ul></div>{% elif user.role != 'production' %}
 <div class="card" style="margin-top:12px"><h2>{% trans "Orders" %}</h2><ul>
   <li><a href="{% url 'order_list' %}">{% trans "All orders" %}</a></li>
   <li><a href="{% url 'customer_sales' %}">{% trans "Customer-wise sales" %}</a></li>

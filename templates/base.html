@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/static/core/icon-192.png" type="image/png">
   <meta name="theme-color" content="#b45309">
   <title>{% block title %}Order-to-Audit{% endblock %}</title>
   <style>
@@ -18,6 +19,7 @@
     input { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:6px; }
     .btn { margin-top:16px; width:100%; padding:12px; font-size:16px; background:var(--accent); color:#fff; border:0; border-radius:6px; cursor:pointer; }
     .error { color:#b91c1c; } .sync { padding:10px 12px; border-radius:6px; margin:0 0 12px; background:#ecfdf5; color:#166534; } .sync.warn { background:#fffbeb; color:#92400e; } .pending { margin-bottom:8px; } .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; } .big { font-size:28px; font-weight:700; margin:4px 0; } .muted { color:#52606d; font-weight:400; font-size:13px; } tr.short td { background:#fef2f2; } select { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:6px; } .st-flag { color:#b91c1c; font-weight:700; } .st-note { color:#92400e; } .st-ok { color:#166534; }
+    input[type=radio], input[type=checkbox] { width:auto; margin:0; } label.opt { display:inline-flex; align-items:center; gap:6px; font-weight:400; margin:6px 16px 6px 0; } input.qty { width:8em; }
     .lang { margin:0; font-size:14px; } .lang button { text-decoration:none; padding:2px 4px; }
     .btn.small { width:auto; margin:0; padding:8px 12px; text-decoration:none; display:inline-block; }
     .filters { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:12px; }
@@ -37,7 +39,7 @@
     </form>
     {% if user.is_authenticated %}
     <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-      {{ user.get_full_name|default:user.username }} ({{ user.get_role_display }}) <button type="submit">{% trans "Log out" %}</button>
+      {{ user.get_full_name|default:user.username }} ({{ user.get_role_display }}) · <a href="{% url 'password_change' %}">{% trans "Password" %}</a> · <button type="submit">{% trans "Log out" %}</button>
     </form>
     {% endif %}
   </header>

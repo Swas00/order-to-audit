@@ -15,7 +15,7 @@ from apps.masters.models import Customer, Sku
 from apps.sales import services as sales
 
 pytestmark = pytest.mark.django_db
-PUBLIC = {"login", "logout", "shared_invoice_pdf", "service_worker", "manifest", "order_api_submit"}  # api: JSON 401, tested separately
+PUBLIC = {"login", "logout", "shared_invoice_pdf", "service_worker", "manifest", "health", "order_api_submit"}  # api: JSON 401, tested separately
 
 
 @pytest.fixture
@@ -160,7 +160,7 @@ def test_sensitive_data_not_in_pages(world):
     c.force_login(User.objects.get(username="admin"))
     for url in (reverse("home"), reverse("order_list"), reverse("invoice_list")):
         body = c.get(url).content.decode().lower()
-        assert "pbkdf2" not in body and "secret_key" not in body and "password" not in body.replace("log in", "")
+        assert "pbkdf2" not in body and "secret_key" not in body and "demo12345" not in body and "password_hash" not in body
 
 
 def test_shared_pdf_token_is_unguessable_and_long(world):
