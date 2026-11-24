@@ -106,7 +106,7 @@ Each report has a date range and exports to CSV, Excel and PDF. `reports/tests.p
 | T-03 | Every movement links to its source | Done | DB requires a source; `inventory/tests.py::test_every_movement_has_a_source_document`; `production/tests.py::test_every_run_movement_links_to_the_run` |
 | T-04 | Audit trail; invoices cancelled by credit note, never deleted | Done | `production/tests.py` (void history), `sales/tests.py` (edits before/after), `billing/tests.py::test_cancel_*` (invoice kept) |
 | T-05 | Seed script for the section 5 master data | Done | `seed_users`, `seed_masters`, `seed_inventory`; `core/tests.py::test_seed_commands_are_rerunnable` |
-| T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **Verified on PostgreSQL 16 (Homebrew, same major version as the Compose file):** all 306 tests pass, and the container start-up steps (migrate, seeds, gunicorn with DEBUG=0) and `run_benchmark` all pass. **Docker itself was never run** (not installed on the dev machine), so the image build and Compose networking are untested. No hosted demo |
+| T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **Live on Render (Docker runtime, free plan, SQLite, reseeded on each start):** https://order-to-audit-207c.onrender.com; I checked health, HTTPS redirect, static files and an owner login. **Verified on PostgreSQL 16 (Homebrew, same major version as the Compose file):** all 306 tests pass, and the container start-up steps (migrate, seeds, gunicorn with DEBUG=0) and `run_benchmark` all pass. **Docker itself was never run** (not installed on the dev machine), so Docker Compose and local image networking are untested (Render did build the Dockerfile successfully) |
 | T-07 | Tally not required for daily work | Done | Tally is an optional export only |
 | T-08 | Stack justification in the README | Done | README section 2 |
 | T-09 | Tests for stock and tax maths | Done | see sections C-E; 306 tests in total |
@@ -122,7 +122,7 @@ Security and robustness (not a numbered requirement, but you asked for it): rout
 | D-2 | README: setup, stack and why, tiers, assumptions, gaps, benchmark numbers | Done | `README.md` |
 | D-3 | Design note, max 2 pages: ER diagram, stock and BOM computation, costing and valuation | Done | `docs/DESIGN.md`. Mermaid diagram renders on GitHub/GitLab. **Check the length when you render it; export to PDF if you prefer** |
 | D-4 | Demo video, max 8 minutes, section 5 in order, mobile and admin views | **Not done: needs you** | Script ready: `docs/DEMO_SCRIPT.md` (targets 7:55). Every step was dry-run through the real screens |
-| D-5 | Live link or run command, with test logins for each role | Partly | Run command and test logins in the README; no live link |
+| D-5 | Live link or run command, with test logins for each role | Done | Live link https://order-to-audit-207c.onrender.com and run command in the README, with test logins. Free plan: slow first load, data resets on restart |
 | D-6 | Work alone | n/a | Individual task |
 
 ## J. Evaluation weights (section 9)
@@ -140,7 +140,7 @@ Security and robustness (not a numbered requirement, but you asked for it): rout
 ## K. Open items before you submit
 
 1. **Record the demo video** with `docs/DEMO_SCRIPT.md` and upload it unlisted (D-4).
-2. **Run Docker Compose** on a machine with Docker, or remove the Docker claims (T-06).
+2. **Run Docker Compose** locally on a machine with Docker, or drop the Compose claims (T-06). The Dockerfile itself already builds and runs on Render.
 3. Put your own words in the README (the one-line AI-assistance note is mine) and be ready to explain every part: `docs/INTERVIEW_GUIDE.md`.
 4. Have the Tamil strings reviewed by a native speaker, or say so plainly as the README does.
 5. Fill in the dates, contact and submission form: section 10 of the brief has placeholders only, so I do not know your deadline.

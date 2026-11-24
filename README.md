@@ -9,6 +9,8 @@ planned-vs-actual consumption and yield**. That is where most of the design effo
 
 Built with an AI coding assistant, as section 7 of the problem statement permits.
 
+**Live demo:** https://order-to-audit-207c.onrender.com (Render free plan: the first load after idle takes about a minute, and the demo data resets on every restart). Test logins for each role are in the table below.
+
 | Document | What it is |
 |---|---|
 | [docs/DESIGN.md](docs/DESIGN.md) | Design note (2 pages): ER diagram, how stock and BOM consumption are computed, costing and valuation |
