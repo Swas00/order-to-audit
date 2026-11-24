@@ -50,8 +50,9 @@ def post(client, data):
 def test_submit_creates_order_with_capture_time(seeded):
     data = body()
     r = post(salesman(), data)
-    assert r.status_code == 200 and r.json()["ok"] and r.json()["order"]["number"] == "ORD-0001"
+    assert r.status_code == 200 and r.json()["ok"] and True
     o = Order.objects.get()
+    assert r.json()["order"]["number"] == o.number  # number comes from the pk; Postgres sequences are not rolled back between tests
     assert o.status == "submitted" and o.lines.get().qty == 150 and o.salesman.username == "salesman_a"
     assert timedelta(hours=1, minutes=59) < timezone.now() - o.created_at < timedelta(hours=2, minutes=1)  # phone's time kept
 

@@ -140,7 +140,7 @@ def test_costing_screen_and_export(client, seeded):
     page = client.get(reverse("costing")).content.decode()
     assert "31.14" in page and "37.71%" in page
     csv = client.get(reverse("costing"), {"export": "csv"}).content.decode()
-    assert "RUN-0001" in csv and "31.1436" in csv
+    assert ProductionRun.objects.get().number in csv and "31.1436" in csv  # number comes from the pk; Postgres sequences are not rolled back between tests
 
 
 def test_add_and_void_through_screen_and_roles(client, seeded):

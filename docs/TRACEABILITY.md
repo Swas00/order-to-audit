@@ -106,7 +106,7 @@ Each report has a date range and exports to CSV, Excel and PDF. `reports/tests.p
 | T-03 | Every movement links to its source | Done | DB requires a source; `inventory/tests.py::test_every_movement_has_a_source_document`; `production/tests.py::test_every_run_movement_links_to_the_run` |
 | T-04 | Audit trail; invoices cancelled by credit note, never deleted | Done | `production/tests.py` (void history), `sales/tests.py` (edits before/after), `billing/tests.py::test_cancel_*` (invoice kept) |
 | T-05 | Seed script for the section 5 master data | Done | `seed_users`, `seed_masters`, `seed_inventory`; `core/tests.py::test_seed_commands_are_rerunnable` |
-| T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **No hosted demo. Docker Compose is written but has never been run** |
+| T-06 | Hosted demo or a single command to run locally | **Partly** | Local run commands documented and used. **Verified on PostgreSQL 16 (Homebrew, same major version as the Compose file):** all 306 tests pass, and the container start-up steps (migrate, seeds, gunicorn with DEBUG=0) and `run_benchmark` all pass. **Docker itself was never run** (not installed on the dev machine), so the image build and Compose networking are untested. No hosted demo |
 | T-07 | Tally not required for daily work | Done | Tally is an optional export only |
 | T-08 | Stack justification in the README | Done | README section 2 |
 | T-09 | Tests for stock and tax maths | Done | see sections C-E; 306 tests in total |
