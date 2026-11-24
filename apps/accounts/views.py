@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.core.cache import cache
@@ -38,6 +39,14 @@ class ThrottledLoginView(LoginView):
     processes the limit applies per process."""
 
     template_name = "login.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if settings.DEMO_LOGINS:  # public demo deployments only; off by default
+            from .management.commands.seed_users import DEMO_PASSWORD, DEMO_USERS
+            ctx["demo_logins"] = [(u, f"{f} {l}", Role(r).label) for u, f, l, r in DEMO_USERS]
+            ctx["demo_password"] = DEMO_PASSWORD
+        return ctx
 
     def post(self, request, *args, **kwargs):
         key = _throttle_key(request)

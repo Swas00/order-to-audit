@@ -9,7 +9,7 @@ planned-vs-actual consumption and yield**. That is where most of the design effo
 
 Built with an AI coding assistant, as section 7 of the problem statement permits.
 
-**Live demo:** https://order-to-audit-207c.onrender.com (Render free plan: the first load after idle takes about a minute, and the demo data resets on every restart). Test logins for each role are in the table below.
+**Live demo:** https://order-to-audit-207c.onrender.com (Render free plan: the first load after idle takes about a minute, and the demo data resets on every restart). The login page lists the test logins, or see the table below.
 
 | Document | What it is |
 |---|---|
@@ -61,6 +61,8 @@ docker compose up --build
 
 These are dummy accounts created by `seed_users`. They must be deleted before any real use.
 
+Accounts are created by an administrator (Django admin), not by self-registration, because every account carries a role that decides what it can reach. On a public demo deployment, set the environment variable `DEMO_LOGINS=1` and the login page lists these usernames and the shared password, with click-to-fill. It is off by default, so a normal install never shows credentials.
+
 ### Replay the benchmark yourself
 
 On a **fresh** database (delete `db.sqlite3`, then migrate and seed as above):
@@ -78,7 +80,7 @@ It performs section 5 steps 1-8 through the same service layer the screens use, 
 .venv/bin/python -m pytest -q
 ```
 
-306 tests, about 2.5 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
+308 tests, about 3 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
 
 ---
 
@@ -257,7 +259,7 @@ Stated plainly, so nothing here is a surprise.
 
 ## 7. How it is tested
 
-306 automated tests, all executed (results are what you get when you run the command above):
+308 automated tests, all executed (results are what you get when you run the command above):
 
 - **Stock and tax maths:** unit conversion, ledger balances, weighted-average cost, FEFO allocation, GST per line, round-off, financial-year boundaries, amount in words.
 - **The benchmark:** every row of the section 5 results table, plus a test that adding a 500 g pack size does not disturb it.

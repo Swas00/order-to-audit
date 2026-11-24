@@ -58,3 +58,19 @@ def test_roles_required_blocks_other_roles():
         else:
             with pytest.raises(PermissionDenied):
                 view(request)
+
+
+# ---------- demo logins panel (public demo deployments only) ----------
+
+def test_login_page_hides_demo_logins_by_default(client, settings):
+    settings.DEMO_LOGINS = False
+    page = client.get(reverse("login")).content.decode()
+    assert "demo12345" not in page and "Demo logins" not in page
+
+
+def test_login_page_shows_demo_logins_when_enabled(client, settings):
+    settings.DEMO_LOGINS = True
+    page = client.get(reverse("login")).content.decode()
+    assert "Demo logins" in page and DEMO_PASSWORD in page
+    for username in ("salesman_a", "salesman_b", "admin", "production", "accountant", "owner"):
+        assert username in page

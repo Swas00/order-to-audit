@@ -13,4 +13,25 @@
     <button class="btn" type="submit">{% trans "Log in" %}</button>
   </form>
 </div>
+{% if demo_logins %}
+<div class="card" id="demo-logins">
+  <h2>Demo logins</h2>
+  <p>This is a demo with invented data. Every account uses the password <code>{{ demo_password }}</code>. Click a row to fill the form.</p>
+  <table>
+    <tr><th>Username</th><th>Role</th></tr>
+    {% for username, name, role in demo_logins %}
+    <tr class="demo-row" data-user="{{ username }}" style="cursor:pointer"><td><code>{{ username }}</code></td><td>{{ role }}</td></tr>
+    {% endfor %}
+  </table>
+  <p><small>Accounts are created by an administrator, because each one carries a role. There is no self-registration.</small></p>
+</div>
+<script>
+document.querySelectorAll(".demo-row").forEach(function (r) {
+  r.addEventListener("click", function () {
+    document.getElementById("id_username").value = r.dataset.user;
+    document.getElementById("id_password").value = "{{ demo_password|escapejs }}";
+  });
+});
+</script>
+{% endif %}
 {% endblock %}
