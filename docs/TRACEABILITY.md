@@ -118,7 +118,7 @@ Security and robustness (not a numbered requirement, but you asked for it): rout
 
 | ID | Deliverable | Status | Notes |
 |---|---|---|---|
-| D-1 | Public Git repository with a clear commit history | **Not yet done by me** | The history exists locally (mostly one commit per milestone). **You must push it to a public GitHub or GitLab repository.** |
+| D-1 | Public Git repository with a clear commit history | Done | Pushed to https://github.com/Swas00/order-to-audit (public); history is mostly one commit per milestone |
 | D-2 | README: setup, stack and why, tiers, assumptions, gaps, benchmark numbers | Done | `README.md` |
 | D-3 | Design note, max 2 pages: ER diagram, stock and BOM computation, costing and valuation | Done | `docs/DESIGN.md`. Mermaid diagram renders on GitHub/GitLab. **Check the length when you render it; export to PDF if you prefer** |
 | D-4 | Demo video, max 8 minutes, section 5 in order, mobile and admin views | **Not done: needs you** | Script ready: `docs/DEMO_SCRIPT.md` (targets 7:55). Every step was dry-run through the real screens |
@@ -139,9 +139,8 @@ Security and robustness (not a numbered requirement, but you asked for it): rout
 
 ## K. Open items before you submit
 
-1. **Push the repository** to a public GitHub or GitLab repository (D-1).
-2. **Record the demo video** with `docs/DEMO_SCRIPT.md` and upload it unlisted (D-4).
-3. **Run Docker Compose** on a machine with Docker, or remove the Docker claims (T-06).
-4. Put your own words in the README (the one-line AI-assistance note is mine) and be ready to explain every part: `docs/INTERVIEW_GUIDE.md`.
-5. Have the Tamil strings reviewed by a native speaker, or say so plainly as the README does.
-6. Fill in the dates, contact and submission form: section 10 of the brief has placeholders only, so I do not know your deadline.
+1. **Record the demo video** with `docs/DEMO_SCRIPT.md` and upload it unlisted (D-4).
+2. **Run Docker Compose** on a machine with Docker, or remove the Docker claims (T-06).
+3. Put your own words in the README (the one-line AI-assistance note is mine) and be ready to explain every part: `docs/INTERVIEW_GUIDE.md`.
+4. Have the Tamil strings reviewed by a native speaker, or say so plainly as the README does.
+5. Fill in the dates, contact and submission form: section 10 of the brief has placeholders only, so I do not know your deadline.
