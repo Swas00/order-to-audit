@@ -20,6 +20,6 @@
 <h2>Overhead entries</h2>
 <div class="scroll"><table><tr><th>Date</th><th>Kind</th><th>₹</th><th>Charged to</th><th>Note</th><th></th></tr>
 {% for e in entries %}<tr><td>{{ e.incurred_on }}</td><td>{{ e.get_kind_display }}</td><td>{{ e.amount }}</td><td>{% if e.run %}{{ e.run.number }}{% else %}monthly pool{% endif %}</td><td>{{ e.description }}{% if e.voided %} <em>(voided: {{ e.void_reason }})</em>{% endif %}</td>
-<td>{% if can_write and not e.voided %}<form method="post" action="{% url 'overhead_void' e.pk %}">{% csrf_token %}<input name="reason" placeholder="Reason" required style="width:8em"><button class="btn small" type="submit">Void</button></form>{% endif %}</td></tr>
+<td>{% if can_write and not e.voided %}<form method="post" action="{% url 'overhead_void' e.pk %}" data-confirm="Void this overhead entry?">{% csrf_token %}<input name="reason" placeholder="Reason" required style="width:8em"><button class="btn small danger" type="submit">Void</button></form>{% endif %}</td></tr>
 {% empty %}<tr><td colspan="6">No entries in this range.</td></tr>{% endfor %}</table></div>
 {% endblock %}

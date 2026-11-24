@@ -340,3 +340,12 @@ def test_money_sums_do_not_drift(seeded):
     assert inv.paid == D("100.30") and str(inv.paid) == "100.30"
     assert services.customer_balance(cust("Retailer A")) == D("7774.70") and str(services.customer_balance(cust("Retailer A"))) == "7774.70"
     assert str(inv.outstanding) == "7774.70"
+
+
+def test_whatsapp_number_gets_the_india_country_code():
+    from apps.billing.views import whatsapp_number
+    assert whatsapp_number("9000000002") == "919000000002"
+    assert whatsapp_number("090000 00002") == "919000000002"          # leading 0 and spaces
+    assert whatsapp_number("+91 90000 00002") == "919000000002"       # already complete
+    assert whatsapp_number("+44 20 7946 0958") == "442079460958"      # other countries untouched
+    assert whatsapp_number("") == "" and whatsapp_number(None) == ""

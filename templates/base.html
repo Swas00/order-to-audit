@@ -32,6 +32,7 @@
     input, select, textarea { width:100%; padding:11px 12px; font-size:16px; border:1px solid #cfc7bb; border-radius:8px; background:#fff; font-family:inherit; }
     input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
     .btn { margin-top:16px; width:100%; padding:12px; font-size:16px; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; cursor:pointer; text-decoration:none; text-align:center; }
+    .btn.danger { background:#b91c1c; } .btn.danger:hover { background:#991b1b; }
     .btn:hover { background:var(--accent-dark); } .btn.small { width:auto; margin:0; padding:8px 14px; display:inline-block; font-size:14px; }
     .error { color:#b91c1c; } .sync { padding:10px 12px; border-radius:8px; margin:0 0 12px; background:#ecfdf5; color:#166534; } .sync.warn { background:#fffbeb; color:#92400e; } .pending { margin-bottom:8px; }
     .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; } .big { font-size:28px; font-weight:700; margin:4px 0; } .muted { color:#6b7280; font-weight:400; font-size:13px; }
@@ -110,6 +111,10 @@
   {% endwith %}
   <main>{% if messages %}<ul class="messages">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}{% block content %}{% endblock %}</main>
 <script>
+document.addEventListener("submit", function (e) {
+  var q = e.target.getAttribute && e.target.getAttribute("data-confirm");
+  if (q && !window.confirm(q)) e.preventDefault();
+});
 document.addEventListener("click", function (e) {
   document.querySelectorAll("nav.main details[open]").forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute("open"); });
 });

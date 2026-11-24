@@ -30,11 +30,11 @@
 {% if issue_form.non_field_errors %}<p class="error">{{ issue_form.non_field_errors }}</p>{% endif %}
 <form method="post" action="{% url 'run_issue' run.pk %}">{% csrf_token %}{{ issue_form.as_p }}<button class="btn" type="submit">{% trans "Issue" %}</button></form></div>
 <div class="card" style="margin-top:12px"><h2>{% trans "Complete run (actual output)" %}</h2>
-<form method="post" action="{% url 'run_complete' run.pk %}">{% csrf_token %}{{ complete_form.as_p }}<button class="btn" type="submit">{% trans "Complete run" %}</button></form></div>
+<form method="post" action="{% url 'run_complete' run.pk %}" data-confirm="Complete this run with the output entered? Stock is updated straight away.">{% csrf_token %}{{ complete_form.as_p }}<button class="btn" type="submit">{% trans "Complete run" %}</button></form></div>
 {% endif %}
 {% if user.role == 'admin' and run.status != 'voided' %}
 <div class="card" style="margin-top:12px"><h2>{% trans "Void run" %}</h2><p>{% trans "Reverses all stock movements of this run. Use to correct a mistake." %}</p>
-<form method="post" action="{% url 'run_void' run.pk %}">{% csrf_token %}<input name="reason" placeholder="{% trans 'Reason' %}" required><button class="btn" type="submit">{% trans "Void run" %}</button></form></div>
+<form method="post" action="{% url 'run_void' run.pk %}" data-confirm="Void this run? All its stock movements are reversed.">{% csrf_token %}<input name="reason" placeholder="{% trans 'Reason' %}" required><button class="btn danger" type="submit">{% trans "Void run" %}</button></form></div>
 {% endif %}
 <h2>{% trans "History" %}</h2>
 <ul>{% for h in history %}<li>{{ h.at|date:"d M Y H:i" }} · {{ h.user }} · <strong>{{ h.action|action_label }}</strong> {{ h.detail|pretty }}</li>{% endfor %}</ul>

@@ -74,3 +74,15 @@ def test_login_page_shows_demo_logins_when_enabled(client, settings):
     assert "Demo logins" in page and DEMO_PASSWORD in page
     for username in ("salesman_a", "salesman_b", "admin", "production", "accountant", "owner"):
         assert username in page
+
+
+def test_password_change_is_refused_on_a_public_demo_but_works_normally(client, settings, db):
+    seed_users()
+    client.login(username="admin", password=DEMO_PASSWORD)
+    settings.DEMO_LOGINS = True
+    r = client.post(reverse("password_change"), {"old_password": DEMO_PASSWORD, "new_password1": "Another-Pass-9731", "new_password2": "Another-Pass-9731"})
+    assert r.status_code == 302 and r["Location"] == "/"
+    assert User.objects.get(username="admin").check_password(DEMO_PASSWORD)   # unchanged
+    settings.DEMO_LOGINS = False
+    r = client.post(reverse("password_change"), {"old_password": DEMO_PASSWORD, "new_password1": "Another-Pass-9731", "new_password2": "Another-Pass-9731"})
+    assert r.status_code == 302 and User.objects.get(username="admin").check_password("Another-Pass-9731")

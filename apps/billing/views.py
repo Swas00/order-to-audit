@@ -26,12 +26,19 @@ def invoice_list(request):
     return render(request, "billing/invoice_list.html", {"invoices": invoices, "d_from": d_from, "d_to": d_to})
 
 
+def whatsapp_number(raw):
+    """wa.me needs the number with country code and nothing else. Indian mobiles are often stored as 10 digits
+    (or with a leading 0), so assume India (+91) for those; anything longer is taken as already complete."""
+    digits = "".join(c for c in (raw or "") if c.isdigit()).lstrip("0")
+    return "91" + digits if len(digits) == 10 else digits
+
+
 @roles_required(*READ)
 def invoice_detail(request, pk):
     inv = get_object_or_404(Invoice.objects.select_related("customer", "order"), pk=pk)
     public = request.build_absolute_uri(f"/i/{inv.share_token}.pdf")
     text = quote(f"Tax invoice {inv.number} from {inv.supplier_name}, total Rs. {inv.grand_total}. PDF: {public}")
-    phone = "".join(c for c in inv.customer.phone if c.isdigit())
+    phone = whatsapp_number(inv.customer.phone)
     shipped = []
     from apps.inventory.models import StockMovement
     from django.contrib.contenttypes.models import ContentType

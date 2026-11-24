@@ -80,7 +80,7 @@ It performs section 5 steps 1-8 through the same service layer the screens use, 
 .venv/bin/python -m pytest -q
 ```
 
-308 tests, about 3 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
+312 tests, about 3 minutes. One of them runs 10 JavaScript unit tests through Node (skipped if Node is not installed).
 
 ---
 
@@ -259,7 +259,7 @@ Stated plainly, so nothing here is a surprise.
 
 ## 7. How it is tested
 
-308 automated tests, all executed (results are what you get when you run the command above):
+312 automated tests, all executed (results are what you get when you run the command above):
 
 - **Stock and tax maths:** unit conversion, ledger balances, weighted-average cost, FEFO allocation, GST per line, round-off, financial-year boundaries, amount in words.
 - **The benchmark:** every row of the section 5 results table, plus a test that adding a 500 g pack size does not disturb it.

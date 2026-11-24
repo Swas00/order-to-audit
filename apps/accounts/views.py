@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
+from django.contrib import messages
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.core.cache import cache
 from django.shortcuts import redirect, render
 
@@ -39,6 +40,7 @@ class ThrottledLoginView(LoginView):
     processes the limit applies per process."""
 
     template_name = "login.html"
+    redirect_authenticated_user = True  # someone already signed in is sent home, not shown the form again
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -65,3 +67,17 @@ class ThrottledLoginView(LoginView):
     def form_valid(self, form):
         cache.delete(_throttle_key(self.request))
         return super().form_valid(form)
+
+
+class SafePasswordChangeView(PasswordChangeView):
+    """On a public demo (DEMO_LOGINS=1) the shared test passwords are shown on the login page, so letting a visitor
+    change one would lock everyone else out. Refused there; normal installs are unaffected."""
+
+    template_name = "password.html"
+    success_url = "/"
+
+    def dispatch(self, request, *args, **kwargs):
+        if settings.DEMO_LOGINS and request.user.is_authenticated:
+            messages.error(request, "Password changes are switched off on this public demo.")
+            return redirect("home")
+        return super().dispatch(request, *args, **kwargs)

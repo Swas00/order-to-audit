@@ -21,8 +21,8 @@
 <button class="btn" type="submit">Approve as entered</button>
 <button class="btn" type="submit" name="available" value="1">Approve only what stock covers</button>
 </form>
-<form method="post" action="{% url 'order_reject' order.pk %}" style="margin-top:12px">{% csrf_token %}
-  <input name="reason" placeholder="Reason for rejecting" required><button class="btn" type="submit">Reject order</button></form>
+<form method="post" action="{% url 'order_reject' order.pk %}" style="margin-top:12px" data-confirm="Reject this order? Rejection is final and the salesman is told.">{% csrf_token %}
+  <input name="reason" placeholder="Reason for rejecting" required><button class="btn danger" type="submit">Reject order</button></form>
 {% else %}
 <div class="scroll"><table>
   <tr><th>Product</th><th>Ordered</th><th>Approved / current qty</th><th>Price ₹</th><th>Amount ₹</th></tr>

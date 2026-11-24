@@ -192,3 +192,30 @@ def test_absurdly_large_numbers_are_rejected_not_crashing(world):
     r = c.post(reverse("purchase_new"), {"supplier": 1, "bill_no": "X", "lines-TOTAL_FORMS": 1, "lines-INITIAL_FORMS": 0,
                                          "lines-0-item": 1, "lines-0-qty": big, "lines-0-unit": 1, "lines-0-rate": big, "lines-0-gst_rate": "0"})
     assert r.status_code == 200
+
+
+# ---------- irreversible actions ask first ----------
+
+def test_irreversible_actions_carry_a_confirmation_and_a_danger_button():
+    from apps.billing.models import Invoice
+    from apps.core.benchmark import run_full_benchmark
+    from apps.production.models import ProductionRun
+    from apps.sales.models import Order
+    seed_users(); seed_masters(); seed_inventory()
+    run_full_benchmark()
+    c = Client()
+    c.login(username="admin", password="demo12345")
+    reject = c.get(f"/orders/{Order.objects.get(status='submitted').pk}/").content.decode()
+    assert 'data-confirm="Reject this order' in reject and 'btn danger' in reject
+    inv = c.get(f"/invoices/{Invoice.objects.first().pk}/").content.decode()
+    assert "data-confirm=\"Cancel this whole invoice" in inv and "data-confirm=\"Issue a credit note" in inv
+    run = c.get(f"/production/{ProductionRun.objects.first().pk}/").content.decode()
+    assert "data-confirm=\"Void this run" in run
+
+
+def test_signed_in_user_is_sent_home_from_the_login_page():
+    seed_users()
+    c = Client()
+    c.login(username="admin", password="demo12345")
+    r = c.get("/login/")
+    assert r.status_code == 302 and r["Location"] == "/"
