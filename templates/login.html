@@ -2,8 +2,10 @@
 {% load i18n %}
 {% block title %}{% trans "Log in" %}{% endblock %}
 {% block content %}
+<div class="login-wrap">
 <div class="card">
-  <h1>{% trans "Log in" %}</h1>
+  <div class="brandmark">&#127850;</div>
+  <h1 style="text-align:center">{% trans "Log in" %}</h1>
   <form method="post">{% csrf_token %}
     {% if locked %}<p class="error">{% trans "Too many failed attempts. Try again in 15 minutes." %}</p>{% elif form.errors %}<p class="error">{% trans "Wrong username or password." %}</p>{% endif %}
     <label for="id_username">{% trans "Username" %}</label>
@@ -34,4 +36,5 @@ document.querySelectorAll(".demo-row").forEach(function (r) {
 });
 </script>
 {% endif %}
+</div>
 {% endblock %}

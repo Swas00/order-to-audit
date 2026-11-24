@@ -8,41 +8,111 @@
   <meta name="theme-color" content="#b45309">
   <title>{% block title %}Order-to-Audit{% endblock %}</title>
   <style>
-    :root { --fg:#1f2933; --bg:#f5f7fa; --card:#fff; --accent:#b45309; --line:#d9e2ec; }
+    :root { --fg:#1f2933; --bg:#f4f1ec; --card:#fff; --accent:#b45309; --accent-dark:#92400e; --accent-soft:#fef3c7; --line:#e4ded5; --shadow:0 1px 2px rgba(31,41,51,.06),0 4px 12px rgba(31,41,51,.05); }
     * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, sans-serif; color:var(--fg); background:var(--bg); }
-    header { display:flex; flex-wrap:wrap; gap:6px 12px; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--accent); color:#fff; }
-    header a, header button { color:#fff; background:none; border:0; font:inherit; cursor:pointer; text-decoration:underline; }
-    main { max-width:960px; margin:0 auto; padding:16px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
-    label { display:block; margin:12px 0 4px; font-weight:600; }
-    input { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:6px; }
-    .btn { margin-top:16px; width:100%; padding:12px; font-size:16px; background:var(--accent); color:#fff; border:0; border-radius:6px; cursor:pointer; }
-    .error { color:#b91c1c; } .sync { padding:10px 12px; border-radius:6px; margin:0 0 12px; background:#ecfdf5; color:#166534; } .sync.warn { background:#fffbeb; color:#92400e; } .pending { margin-bottom:8px; } .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; } .big { font-size:28px; font-weight:700; margin:4px 0; } .muted { color:#52606d; font-weight:400; font-size:13px; } tr.short td { background:#fef2f2; } select { width:100%; padding:12px; font-size:16px; border:1px solid var(--line); border-radius:6px; } .st-flag { color:#b91c1c; font-weight:700; } .st-note { color:#92400e; } .st-ok { color:#166534; }
+    body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--fg); background:var(--bg); line-height:1.45; }
+    h1 { font-size:24px; margin:0 0 8px; } h2 { font-size:18px; margin:0 0 10px; } a { color:var(--accent-dark); }
+    header.top { background:var(--accent); color:#fff; box-shadow:var(--shadow); position:sticky; top:0; z-index:20; }
+    .bar { max-width:1100px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:8px 16px; }
+    .brand { font-weight:700; font-size:18px; color:#fff; text-decoration:none; margin-right:6px; }
+    nav.main { display:flex; flex-wrap:wrap; gap:2px 4px; flex:1; }
+    nav.main > a, nav.main summary { color:#fff; text-decoration:none; padding:7px 10px; border-radius:6px; cursor:pointer; list-style:none; font-size:14px; white-space:nowrap; }
+    nav.main summary::-webkit-details-marker { display:none; } nav.main summary::after { content:" \25BE"; font-size:11px; }
+    nav.main > a:hover, nav.main summary:hover, nav.main a.on, nav.main details.on > summary { background:rgba(255,255,255,.2); }
+    nav.main details { position:relative; }
+    nav.main .menu { position:absolute; left:0; top:100%; min-width:210px; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); padding:6px; z-index:30; }
+    nav.main .menu a { display:block; padding:8px 10px; color:var(--fg); text-decoration:none; border-radius:6px; font-size:14px; } nav.main .menu a:hover { background:var(--accent-soft); } nav.main .menu a.on { font-weight:700; background:var(--accent-soft); }
+    .who { display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; font-size:13px; } .who form { margin:0; display:inline; }
+    .who a, .who button, .lang button { color:#fff; background:none; border:0; font:inherit; cursor:pointer; text-decoration:underline; padding:2px 4px; }
+    .lang { margin:0; font-size:13px; } .lang button { text-decoration:none; } .lang button[aria-current=true] { font-weight:700; text-decoration:underline; }
+    .pill { background:rgba(255,255,255,.2); border-radius:999px; padding:2px 10px; }
+    main { max-width:1100px; margin:0 auto; padding:18px 16px 40px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; box-shadow:var(--shadow); margin-bottom:14px; }
+    label { display:block; margin:12px 0 4px; font-weight:600; font-size:14px; }
+    input, select, textarea { width:100%; padding:11px 12px; font-size:16px; border:1px solid #cfc7bb; border-radius:8px; background:#fff; font-family:inherit; }
+    input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+    .btn { margin-top:16px; width:100%; padding:12px; font-size:16px; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; cursor:pointer; text-decoration:none; text-align:center; }
+    .btn:hover { background:var(--accent-dark); } .btn.small { width:auto; margin:0; padding:8px 14px; display:inline-block; font-size:14px; }
+    .error { color:#b91c1c; } .sync { padding:10px 12px; border-radius:8px; margin:0 0 12px; background:#ecfdf5; color:#166534; } .sync.warn { background:#fffbeb; color:#92400e; } .pending { margin-bottom:8px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; } .big { font-size:28px; font-weight:700; margin:4px 0; } .muted { color:#6b7280; font-weight:400; font-size:13px; }
+    tr.short td { background:#fef2f2; } .st-flag { color:#b91c1c; font-weight:700; } .st-note { color:#92400e; } .st-ok { color:#166534; }
     input[type=radio], input[type=checkbox] { width:auto; margin:0; } label.opt { display:inline-flex; align-items:center; gap:6px; font-weight:400; margin:6px 16px 6px 0; } input.qty { width:8em; }
-    .lang { margin:0; font-size:14px; } .lang button { text-decoration:none; padding:2px 4px; }
-    .btn.small { width:auto; margin:0; padding:8px 12px; text-decoration:none; display:inline-block; }
-    .filters { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:12px; }
-    .filters input, .filters select { width:auto; padding:8px; }
-    .scroll { overflow-x:auto; } table { border-collapse:collapse; width:100%; background:#fff; }
-    th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; font-size:14px; }
-    fieldset { margin:12px 0; border:1px solid var(--line); } .messages { list-style:none; padding:0; color:#166534; }
+    .filters { display:flex; flex-wrap:wrap; gap:8px; align-items:end; margin-bottom:12px; } .filters input, .filters select { width:auto; padding:8px; }
+    .scroll { overflow-x:auto; } table { border-collapse:collapse; width:100%; background:#fff; border-radius:8px; overflow:hidden; }
+    th, td { border:1px solid var(--line); padding:7px 10px; text-align:left; font-size:14px; } th { background:#faf7f2; font-weight:600; } tbody tr:nth-child(even) td { background:#fcfaf7; } tbody tr:hover td { background:var(--accent-soft); }
+    fieldset { margin:12px 0; border:1px solid var(--line); border-radius:8px; } .messages { list-style:none; padding:0; margin:0 0 14px; } .messages li { background:#ecfdf5; color:#166534; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-bottom:6px; }
+    .hero { background:linear-gradient(135deg,var(--accent),#d97706); color:#fff; border:0; } .hero h1, .hero p { color:#fff; margin:0 0 6px; } .hero .role { display:inline-block; background:rgba(255,255,255,.22); border-radius:999px; padding:2px 12px; font-size:13px; }
+    .section-title { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#6b7280; margin:22px 2px 8px; font-weight:700; }
+    .tiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+    a.tile { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; text-decoration:none; color:var(--fg); box-shadow:var(--shadow); transition:transform .08s,border-color .08s; }
+    a.tile:hover { transform:translateY(-2px); border-color:var(--accent); } a.tile .ico { font-size:26px; width:44px; height:44px; display:grid; place-items:center; background:var(--accent-soft); border-radius:10px; flex:none; } a.tile b { display:block; font-size:15px; } a.tile span.d { font-size:12px; color:#6b7280; }
+    a.tile.primary { background:var(--accent); color:#fff; border-color:var(--accent); } a.tile.primary .ico { background:rgba(255,255,255,.22); } a.tile.primary span.d { color:#fde68a; }
+    .login-wrap { max-width:430px; margin:24px auto 0; } .login-wrap .brandmark { text-align:center; font-size:44px; margin-bottom:4px; }
+    @media (max-width:640px) { .bar { gap:4px 8px; } nav.main { order:3; flex-basis:100%; } nav.main .menu { position:static; box-shadow:none; } h1 { font-size:21px; } }
+    @media print { header.top { display:none; } body { background:#fff; } }
   </style>
 </head>
 <body>
-  <header>
-    <strong><a href="/" style="text-decoration:none">{% trans "Order-to-Audit" %}</a></strong>
-    <form method="post" action="{% url 'set_language' %}" class="lang">{% csrf_token %}
-      <input type="hidden" name="next" value="{{ request.get_full_path }}">
-      <button type="submit" name="language" value="en" lang="en">English</button> ·
-      <button type="submit" name="language" value="ta" lang="ta">தமிழ்</button>
-    </form>
+  {% with n=request.resolver_match.url_name role=user.role %}
+  <header class="top"><div class="bar">
+    <a class="brand" href="/">&#127850; {% trans "Order-to-Audit" %}</a>
     {% if user.is_authenticated %}
-    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-      {{ user.get_full_name|default:user.username }} ({{ user.get_role_display }}) · <a href="{% url 'password_change' %}">{% trans "Password" %}</a> · <button type="submit">{% trans "Log out" %}</button>
-    </form>
+    <nav class="main" aria-label="Main">
+      {% if role == 'salesman' %}
+        <a href="{% url 'order_new' %}" class="{% if n == 'order_new' %}on{% endif %}">{% trans "New order" %}</a>
+        <a href="{% url 'order_list' %}" class="{% if n == 'order_list' %}on{% endif %}">{% trans "My orders and status" %}</a>
+        <a href="{% url 'visit_new' %}" class="{% if n == 'visit_new' or n == 'visit_list' %}on{% endif %}">{% trans "My visits" %}</a>
+        <a href="{% url 'customer_sales' %}" class="{% if n == 'customer_sales' %}on{% endif %}">{% trans "My customer-wise sales" %}</a>
+      {% else %}
+        {% if role == 'admin' or role == 'owner' %}<a href="{% url 'dashboard' %}" class="{% if n == 'dashboard' %}on{% endif %}">{% trans "Dashboard" %}</a>{% endif %}
+        {% if role != 'production' %}
+        <details><summary>{% trans "Orders" %}</summary><div class="menu">
+          <a href="{% url 'order_list' %}">{% trans "All orders" %}</a>
+          <a href="{% url 'customer_sales' %}">{% trans "Customer-wise sales" %}</a>
+          {% if role == 'admin' or role == 'owner' %}<a href="{% url 'visit_list' %}">{% trans "Salesman visits" %}</a>{% endif %}
+        </div></details>
+        {% endif %}
+        <details><summary>Production</summary><div class="menu">
+          <a href="{% url 'run_list' %}">{% trans "Production runs" %}</a>
+          <a href="{% url 'run_plan' %}">{% trans "Production plan" %}</a>
+          <a href="{% url 'purchase_list' %}">{% trans "Purchases" %}</a>
+        </div></details>
+        <details><summary>Stock</summary><div class="menu">
+          <a href="{% url 'stock_summary' %}">{% trans "Stock summary" %}</a>
+          <a href="{% url 'stock_ledger' %}">{% trans "Stock ledger" %}</a>
+          <a href="{% url 'costing' %}">{% trans "Cost per packet" %}</a>
+        </div></details>
+        {% if role != 'production' %}
+        <details><summary>Accounts</summary><div class="menu">
+          <a href="{% url 'invoice_list' %}">{% trans "Invoices" %}</a>
+          <a href="{% url 'payment_list' %}">{% trans "Payments" %}</a>
+          <a href="{% url 'receivables' %}">{% trans "Outstanding and ageing" %}</a>
+        </div></details>
+        {% endif %}
+        <a href="{% url 'reports' %}" class="{% if n == 'reports' %}on{% endif %}">{% trans "Reports" %}</a>
+      {% endif %}
+    </nav>
     {% endif %}
-  </header>
+    <div class="who">
+      <form method="post" action="{% url 'set_language' %}" class="lang">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" name="language" value="en" lang="en" {% if LANGUAGE_CODE|slice:":2" == 'en' %}aria-current="true"{% endif %}>English</button> ·
+        <button type="submit" name="language" value="ta" lang="ta" {% if LANGUAGE_CODE|slice:":2" == 'ta' %}aria-current="true"{% endif %}>தமிழ்</button>
+      </form>
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+        <span class="pill">{{ user.get_full_name|default:user.username }} · {{ user.get_role_display }}</span>
+        <a href="{% url 'password_change' %}">{% trans "Password" %}</a> · <button type="submit">{% trans "Log out" %}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div></header>
+  {% endwith %}
   <main>{% if messages %}<ul class="messages">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}{% block content %}{% endblock %}</main>
+<script>
+document.addEventListener("click", function (e) {
+  document.querySelectorAll("nav.main details[open]").forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute("open"); });
+});
+</script>
 </body>
 </html>
